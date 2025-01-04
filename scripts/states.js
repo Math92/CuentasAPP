@@ -73,7 +73,7 @@ export function getNext12Months() {
     return months;
 }
 
-function isMonthCurrentOrFuture(yearMonth) {
+export function isMonthCurrentOrFuture(yearMonth) {
     const today = new Date();
     const [year, month] = yearMonth.split('-').map(Number);
     const checkDate = new Date(year, month - 1);

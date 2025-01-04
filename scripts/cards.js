@@ -1,5 +1,5 @@
-import { state, saveState } from './states.js';
-
+import { state, saveState, getNext12Months, isMonthCurrentOrFuture } from './states.js';
+import { updateUI } from './events.js';
 
 // Función para crear una tarjeta de registro de deuda/crédito
 export function createRecordCard(record, isDebtor) {
@@ -26,32 +26,71 @@ export function createRecordCard(record, isDebtor) {
         const loanItem = createLoanItem(loan, record.id);
         loansContainer.appendChild(loanItem);
     });
-    
-    // Mostrar préstamos completados
-    const completedLoans = record.getCompletedLoans();
-    if (completedLoans.length > 0) {
-        const completedSection = document.createElement('div');
-        completedSection.className = 'completed-loans';
-        const completedTitle = document.createElement('h4');
-        completedTitle.textContent = 'Préstamos Completados';
-        completedSection.appendChild(completedTitle);
-        
-        completedLoans.forEach(loan => {
-            const loanItem = createLoanItem(loan, record.id);
-            completedSection.appendChild(loanItem);
-        });
-        
-        loansContainer.appendChild(completedSection);
-    }
-    
+
     card.appendChild(loansContainer);
     
-    // Botón para agregar nuevo préstamo
+    // Formulario desplegable para nuevo préstamo (inicialmente oculto)
+    const newLoanSection = document.createElement('div');
+    newLoanSection.className = 'new-loan-section hidden';
+    newLoanSection.innerHTML = `
+        <form class="add-loan-form">
+            <h4>Agregar Nuevo Préstamo</h4>
+            <div class="form-group">
+                <label>Monto del Préstamo:</label>
+                <input type="number" step="0.01" class="amount-input" required>
+            </div>
+            <div class="form-group">
+                <label>Fecha:</label>
+                <input type="date" class="date-input" required value="${new Date().toISOString().split('T')[0]}">
+            </div>
+            <div class="form-group">
+                <label>Descripción/Razón:</label>
+                <input type="text" class="description-input" required>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="submit-btn">Guardar Préstamo</button>
+                <button type="button" class="cancel-btn">Cancelar</button>
+            </div>
+        </form>
+    `;
+    card.appendChild(newLoanSection);
+    
+    // Botón para mostrar formulario
     const addLoanButton = document.createElement('button');
     addLoanButton.className = 'add-loan-button';
     addLoanButton.textContent = `Agregar Nuevo ${isDebtor ? 'Préstamo' : 'Crédito'}`;
-    addLoanButton.onclick = () => showAddLoanForm(record.id, card);
+    addLoanButton.onclick = () => {
+        newLoanSection.classList.remove('hidden');
+        addLoanButton.classList.add('hidden');
+    };
     card.appendChild(addLoanButton);
+    
+    // Manejar el formulario de nuevo préstamo
+    const addLoanForm = newLoanSection.querySelector('.add-loan-form');
+    const cancelButton = newLoanSection.querySelector('.cancel-btn');
+    
+    addLoanForm.onsubmit = (e) => {
+        e.preventDefault();
+        const amount = e.target.querySelector('.amount-input').value;
+        const date = e.target.querySelector('.date-input').value;
+        const description = e.target.querySelector('.description-input').value;
+        
+        if (record) {
+            record.addLoan(amount, date, description);
+            saveState();
+            updateUI();
+        }
+        
+        newLoanSection.classList.add('hidden');
+        addLoanButton.classList.remove('hidden');
+        e.target.reset();
+    };
+    
+    cancelButton.onclick = () => {
+        newLoanSection.classList.add('hidden');
+        addLoanButton.classList.remove('hidden');
+        addLoanForm.reset();
+    };
     
     return card;
 }

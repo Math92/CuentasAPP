@@ -307,3 +307,52 @@ button:hover {
         text-align: center;
     }
 }
+
+.new-loan-section {
+    background-color: var(--card-background);
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+    border: 1px solid var(--border-color);
+}
+
+.new-loan-section.hidden {
+    display: none;
+}
+
+.new-loan-section h4 {
+    color: var(--text-primary);
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--accent-color);
+}
+
+.add-loan-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.add-loan-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.form-actions button {
+    flex: 1;
+}
+
+.cancel-btn {
+    background-color: var(--error-color) !important;
+}
+
+.hidden {
+    display: none !important;
+}

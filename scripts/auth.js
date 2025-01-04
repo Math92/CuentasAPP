@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = document.getElementById('password').value;
 
             try {
-                // Crear el usuario
+                // Crear el usuario con estructura inicial
                 const response = await fetch(`${FIREBASE_URL}/users.json`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

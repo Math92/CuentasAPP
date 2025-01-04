@@ -1,17 +1,25 @@
 // firebase-service.js
 const FIREBASE_URL = 'https://cuentasapp-a1f3e-default-rtdb.firebaseio.com/';
 
-
 const handleResponse = async (response) => {
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return await response.json();
-}; 
+};
+
+const getCurrentUserId = () => {
+    const userStr = sessionStorage.getItem('currentUser');
+    if (!userStr) return null;
+    return JSON.parse(userStr).id;
+};
 
 export const firebaseService = {
-    // Debtores (Deudores)
+    // Debtors (Deudores)
     async getDebtors() {
+        const userId = getCurrentUserId();
+        if (!userId) throw new Error('No user authenticated');
+
         try {
-            const response = await fetch(`${FIREBASE_URL}/debtors.json`);
+            const response = await fetch(`${FIREBASE_URL}/users/${userId}/debtors.json`);
             const data = await handleResponse(response);
             return data ? Object.keys(data).map(key => ({
                 ...data[key],
@@ -24,12 +32,15 @@ export const firebaseService = {
     },
 
     async saveDebtor(debtor) {
+        const userId = getCurrentUserId();
+        if (!userId) throw new Error('No user authenticated');
+
         try {
             const { id, ...debtorData } = debtor;
             const method = id ? 'PUT' : 'POST';
             const url = id ? 
-                `${FIREBASE_URL}/debtors/${id}.json` : 
-                `${FIREBASE_URL}/debtors.json`;
+                `${FIREBASE_URL}/users/${userId}/debtors/${id}.json` : 
+                `${FIREBASE_URL}/users/${userId}/debtors.json`;
 
             const response = await fetch(url, {
                 method,
@@ -46,8 +57,11 @@ export const firebaseService = {
     },
 
     async deleteDebtor(id) {
+        const userId = getCurrentUserId();
+        if (!userId) throw new Error('No user authenticated');
+
         try {
-            await fetch(`${FIREBASE_URL}/debtors/${id}.json`, {
+            await fetch(`${FIREBASE_URL}/users/${userId}/debtors/${id}.json`, {
                 method: 'DELETE'
             });
         } catch (error) {
@@ -58,8 +72,11 @@ export const firebaseService = {
 
     // Creditors (Acreedores)
     async getCreditors() {
+        const userId = getCurrentUserId();
+        if (!userId) throw new Error('No user authenticated');
+
         try {
-            const response = await fetch(`${FIREBASE_URL}/creditors.json`);
+            const response = await fetch(`${FIREBASE_URL}/users/${userId}/creditors.json`);
             const data = await handleResponse(response);
             return data ? Object.keys(data).map(key => ({
                 ...data[key],
@@ -72,12 +89,15 @@ export const firebaseService = {
     },
 
     async saveCreditor(creditor) {
+        const userId = getCurrentUserId();
+        if (!userId) throw new Error('No user authenticated');
+
         try {
             const { id, ...creditorData } = creditor;
             const method = id ? 'PUT' : 'POST';
             const url = id ? 
-                `${FIREBASE_URL}/creditors/${id}.json` : 
-                `${FIREBASE_URL}/creditors.json`;
+                `${FIREBASE_URL}/users/${userId}/creditors/${id}.json` : 
+                `${FIREBASE_URL}/users/${userId}/creditors.json`;
 
             const response = await fetch(url, {
                 method,
@@ -94,8 +114,11 @@ export const firebaseService = {
     },
 
     async deleteCreditor(id) {
+        const userId = getCurrentUserId();
+        if (!userId) throw new Error('No user authenticated');
+
         try {
-            await fetch(`${FIREBASE_URL}/creditors/${id}.json`, {
+            await fetch(`${FIREBASE_URL}/users/${userId}/creditors/${id}.json`, {
                 method: 'DELETE'
             });
         } catch (error) {
@@ -106,8 +129,11 @@ export const firebaseService = {
 
     // Fixed Expenses (Gastos Fijos)
     async getFixedExpenses() {
+        const userId = getCurrentUserId();
+        if (!userId) throw new Error('No user authenticated');
+
         try {
-            const response = await fetch(`${FIREBASE_URL}/fixedExpenses.json`);
+            const response = await fetch(`${FIREBASE_URL}/users/${userId}/fixedExpenses.json`);
             const data = await handleResponse(response);
             return data ? Object.keys(data).map(key => ({
                 ...data[key],
@@ -120,12 +146,15 @@ export const firebaseService = {
     },
 
     async saveFixedExpense(expense) {
+        const userId = getCurrentUserId();
+        if (!userId) throw new Error('No user authenticated');
+
         try {
             const { id, ...expenseData } = expense;
             const method = id ? 'PUT' : 'POST';
             const url = id ? 
-                `${FIREBASE_URL}/fixedExpenses/${id}.json` : 
-                `${FIREBASE_URL}/fixedExpenses.json`;
+                `${FIREBASE_URL}/users/${userId}/fixedExpenses/${id}.json` : 
+                `${FIREBASE_URL}/users/${userId}/fixedExpenses.json`;
 
             const response = await fetch(url, {
                 method,
@@ -142,8 +171,11 @@ export const firebaseService = {
     },
 
     async deleteFixedExpense(id) {
+        const userId = getCurrentUserId();
+        if (!userId) throw new Error('No user authenticated');
+
         try {
-            await fetch(`${FIREBASE_URL}/fixedExpenses/${id}.json`, {
+            await fetch(`${FIREBASE_URL}/users/${userId}/fixedExpenses/${id}.json`, {
                 method: 'DELETE'
             });
         } catch (error) {
@@ -154,9 +186,12 @@ export const firebaseService = {
 
     // Loan Payments (Pagos de Préstamos)
     async saveLoanPayment(debtorId, loanId, payment) {
+        const userId = getCurrentUserId();
+        if (!userId) throw new Error('No user authenticated');
+
         try {
             const response = await fetch(
-                `${FIREBASE_URL}/payments/${debtorId}/${loanId}.json`, 
+                `${FIREBASE_URL}/users/${userId}/payments/${debtorId}/${loanId}.json`, 
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -173,8 +208,11 @@ export const firebaseService = {
     },
 
     async getLoanPayments(debtorId, loanId) {
+        const userId = getCurrentUserId();
+        if (!userId) throw new Error('No user authenticated');
+
         try {
-            const response = await fetch(`${FIREBASE_URL}/payments/${debtorId}/${loanId}.json`);
+            const response = await fetch(`${FIREBASE_URL}/users/${userId}/payments/${debtorId}/${loanId}.json`);
             const data = await handleResponse(response);
             return data ? Object.keys(data).map(key => ({
                 ...data[key],
@@ -183,38 +221,6 @@ export const firebaseService = {
         } catch (error) {
             console.error('Error:', error);
             return [];
-        }
-    },
-
-    // Users (Usuarios)
-    async saveUser(user) {
-        try {
-            const response = await fetch(`${FIREBASE_URL}/users.json`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    ...user,
-                    debtors: {},
-                    creditors: {},
-                    fixedExpenses: {},
-                    payments: {}
-                })
-            });
-            
-            return await handleResponse(response);
-        } catch (error) {
-            console.error('Error:', error);
-            throw error;
-        }
-    },
-
-    async getUserData(userId) {
-        try {
-            const response = await fetch(`${FIREBASE_URL}/users/${userId}.json`);
-            return await handleResponse(response);
-        } catch (error) {
-            console.error('Error:', error);
-            throw error;
         }
     }
 };

@@ -26,19 +26,29 @@
                 </div>
                 <div class="monthly-summary">
                     <div class="summary-section">
-                        <h3>Pagos a Recibir</h3>
-                        <div id="incoming-payments"></div>
+                        <h3>Deudores - Dinero a Recibir</h3>
+                        <div class="summary-content">
+                            <div class="total-section">
+                                <p>Total General a Recibir: <span id="total-to-receive">$0.00</span></p>
+                            </div>
+                            <div id="debtors-summary"></div>
+                        </div>
                     </div>
                     <div class="summary-section">
-                        <h3>Pagos a Realizar</h3>
-                        <div id="outgoing-payments"></div>
+                        <h3>Acreedores - Dinero a Pagar</h3>
+                        <div class="summary-content">
+                            <div class="total-section">
+                                <p>Total General a Pagar: <span id="total-to-pay">$0.00</span></p>
+                            </div>
+                            <div id="creditors-summary"></div>
+                        </div>
                     </div>
                     <div class="summary-section">
                         <h3>Gastos Fijos del Mes</h3>
                         <div id="fixed-expenses-summary"></div>
                     </div>
                     <div class="balance-summary">
-                        <h3>Balance Mensual Estimado</h3>
+                        <h3>Balance Mensual</h3>
                         <div id="monthly-balance"></div>
                     </div>
                 </div>
@@ -55,19 +65,15 @@
                         <input type="text" id="debtor-name" required>
                     </div>
                     <div class="form-group">
-                        <label for="debt-amount">Monto Total:</label>
-                        <input type="number" id="debt-amount" required>
+                        <label for="debt-amount">Monto del Préstamo:</label>
+                        <input type="number" id="debt-amount" step="0.01" required>
                     </div>
                     <div class="form-group">
-                        <label for="monthly-payment">Pago Mensual:</label>
-                        <input type="number" id="monthly-payment" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="start-date">Fecha de Inicio:</label>
+                        <label for="start-date">Fecha del Préstamo:</label>
                         <input type="date" id="start-date" required>
                     </div>
                     <div class="form-group">
-                        <label for="debtor-details">Detalles:</label>
+                        <label for="debtor-details">Detalles/Razón del préstamo:</label>
                         <textarea id="debtor-details" rows="3"></textarea>
                     </div>
                     <button type="submit">Agregar Deudor</button>
@@ -88,19 +94,15 @@
                         <input type="text" id="creditor-name" required>
                     </div>
                     <div class="form-group">
-                        <label for="credit-amount">Monto Total:</label>
-                        <input type="number" id="credit-amount" required>
+                        <label for="credit-amount">Monto del Crédito:</label>
+                        <input type="number" id="credit-amount" step="0.01" required>
                     </div>
                     <div class="form-group">
-                        <label for="monthly-payment-creditor">Pago Mensual:</label>
-                        <input type="number" id="monthly-payment-creditor" required>
+                        <label for="credit-date">Fecha del Crédito:</label>
+                        <input type="date" id="credit-date" required>
                     </div>
                     <div class="form-group">
-                        <label for="start-date-creditor">Fecha de Inicio:</label>
-                        <input type="date" id="start-date-creditor" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="creditor-details">Detalles:</label>
+                        <label for="creditor-details">Detalles/Razón del crédito:</label>
                         <textarea id="creditor-details" rows="3"></textarea>
                     </div>
                     <button type="submit">Agregar Acreedor</button>
@@ -122,7 +124,7 @@
                     </div>
                     <div class="form-group">
                         <label for="expense-amount">Monto:</label>
-                        <input type="number" id="expense-amount" required>
+                        <input type="number" id="expense-amount" step="0.01" required>
                     </div>
                     <div class="form-group">
                         <label for="expense-day">Día del mes para pago:</label>
@@ -141,11 +143,41 @@
         </div>
     </div>
 
+    <!-- Templates para las tarjetas de registro -->
+    <template id="loan-card-template">
+        <div class="loan-card">
+            <div class="loan-header">
+                <h4 class="loan-title"></h4>
+                <span class="loan-date"></span>
+            </div>
+            <div class="loan-info">
+                <p class="loan-amount"></p>
+                <p class="loan-remaining"></p>
+            </div>
+            <div class="loan-payments">
+                <h5>Registrar Pago</h5>
+                <form class="payment-form">
+                    <div class="form-group">
+                        <input type="number" step="0.01" placeholder="Monto" required>
+                        <input type="date" required>
+                        <input type="text" placeholder="Detalles del pago">
+                        <button type="submit">Registrar Pago</button>
+                    </div>
+                </form>
+            </div>
+            <div class="payment-history">
+                <h5>Historial de Pagos</h5>
+                <div class="payments-list">
+                    <!-- Los pagos se insertarán aquí -->
+                </div>
+            </div>
+        </div>
+    </template>
+
     <!-- Botón de emergencia para limpiar datos -->
-    <div class="emergency-actions" style="margin-top: 20px; text-align: center;">
-        <button onclick="clearAllData()" style="background-color: var(--error-color);">Limpiar Todos los Datos</button>
+    <div class="emergency-actions">
+        <button onclick="clearAllData()" class="danger-button">Limpiar Todos los Datos</button>
     </div>
 
-    <script src="app.js"></script>
-</body>
+    <script type="module" src="scripts/init.js"></script></body>
 </html>

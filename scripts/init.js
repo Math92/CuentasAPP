@@ -1,21 +1,22 @@
-import { loadState, state, saveState } from './states.js';
-import { 
-    switchTab, 
-    clearAllData, 
-    updateMonthlyOverview,
-    updateUI 
-} from './events.js';
-import { DebtRecord, FixedExpense } from './base.js';
+// init.js
+import { loadState } from './states.js';
+import { switchTab, updateMonthlyOverview } from './events.js';
+import { authService } from './auth.js';
 
-// Evento de carga inicial
-document.addEventListener('DOMContentLoaded', () => {
-    loadState();
-    
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!authService.checkAuth()) return;
+
+    const user = authService.getCurrentUser();
+    const userEmailElement = document.getElementById('user-email');
+    if (userEmailElement) {
+        userEmailElement.textContent = user.email;
+    }
+
     try {
-        // Inicializar en vista general
+        await loadState();
+        
         switchTab('overview');
         
-        // Establecer mes actual
         const currentDate = new Date();
         const currentMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
         const overviewMonth = document.getElementById('overview-month');
@@ -23,10 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
             overviewMonth.value = currentMonth;
             updateMonthlyOverview();
         }
-
-        updateUI();
     } catch (error) {
-        console.error('Error during initialization:', error);
-        clearAllData();
+        console.error('Error en inicialización:', error);
+        authService.logout();
     }
 });

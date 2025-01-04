@@ -121,24 +121,6 @@ export async function loadState() {
     }
 }
 
-export async function clearAllData() {
-    try {
-        const deletePromises = [
-            ...state.debtors.map(debtor => firebaseService.deleteDebtor(debtor.id)),
-            ...state.creditors.map(creditor => firebaseService.deleteCreditor(creditor.id)),
-            ...state.fixedExpenses.map(expense => firebaseService.deleteFixedExpense(expense.id))
-        ];
-        
-        await Promise.all(deletePromises);
-        state.debtors = [];
-        state.creditors = [];
-        state.fixedExpenses = [];
-        await updateUI();
-    } catch (error) {
-        console.error('Error clearing data:', error);
-        throw error;
-    }
-}
 
 export async function addPaymentToLoan(debtorId, loanId, payment) {
     try {

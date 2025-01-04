@@ -1,17 +1,14 @@
 // firebase-service.js
 const FIREBASE_URL = 'https://cuentasapp-a1f3e-default-rtdb.firebaseio.com/';
 
-// Función helper para manejar errores
+
 const handleResponse = async (response) => {
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data;
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return await response.json();
 }; 
 
 export const firebaseService = {
-    // Debtors
+    // Debtores (Deudores)
     async getDebtors() {
         try {
             const response = await fetch(`${FIREBASE_URL}/debtors.json`);
@@ -21,7 +18,7 @@ export const firebaseService = {
                 id: key
             })) : [];
         } catch (error) {
-            console.error('Error fetching debtors:', error);
+            console.error('Error:', error);
             return [];
         }
     },
@@ -36,36 +33,30 @@ export const firebaseService = {
 
             const response = await fetch(url, {
                 method,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(debtorData)
             });
 
             const data = await handleResponse(response);
-            return {
-                ...debtorData,
-                id: id || data.name
-            };
+            return { ...debtorData, id: id || data.name };
         } catch (error) {
-            console.error('Error saving debtor:', error);
+            console.error('Error:', error);
             throw error;
         }
     },
 
     async deleteDebtor(id) {
         try {
-            const response = await fetch(`${FIREBASE_URL}/debtors/${id}.json`, {
+            await fetch(`${FIREBASE_URL}/debtors/${id}.json`, {
                 method: 'DELETE'
             });
-            await handleResponse(response);
         } catch (error) {
-            console.error('Error deleting debtor:', error);
+            console.error('Error:', error);
             throw error;
         }
     },
 
-    // Creditors
+    // Creditors (Acreedores)
     async getCreditors() {
         try {
             const response = await fetch(`${FIREBASE_URL}/creditors.json`);
@@ -75,7 +66,7 @@ export const firebaseService = {
                 id: key
             })) : [];
         } catch (error) {
-            console.error('Error fetching creditors:', error);
+            console.error('Error:', error);
             return [];
         }
     },
@@ -90,36 +81,30 @@ export const firebaseService = {
 
             const response = await fetch(url, {
                 method,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(creditorData)
             });
 
             const data = await handleResponse(response);
-            return {
-                ...creditorData,
-                id: id || data.name
-            };
+            return { ...creditorData, id: id || data.name };
         } catch (error) {
-            console.error('Error saving creditor:', error);
+            console.error('Error:', error);
             throw error;
         }
     },
 
     async deleteCreditor(id) {
         try {
-            const response = await fetch(`${FIREBASE_URL}/creditors/${id}.json`, {
+            await fetch(`${FIREBASE_URL}/creditors/${id}.json`, {
                 method: 'DELETE'
             });
-            await handleResponse(response);
         } catch (error) {
-            console.error('Error deleting creditor:', error);
+            console.error('Error:', error);
             throw error;
         }
     },
 
-    // Fixed Expenses
+    // Fixed Expenses (Gastos Fijos)
     async getFixedExpenses() {
         try {
             const response = await fetch(`${FIREBASE_URL}/fixedExpenses.json`);
@@ -129,7 +114,7 @@ export const firebaseService = {
                 id: key
             })) : [];
         } catch (error) {
-            console.error('Error fetching fixed expenses:', error);
+            console.error('Error:', error);
             return [];
         }
     },
@@ -144,45 +129,37 @@ export const firebaseService = {
 
             const response = await fetch(url, {
                 method,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(expenseData)
             });
 
             const data = await handleResponse(response);
-            return {
-                ...expenseData,
-                id: id || data.name
-            };
+            return { ...expenseData, id: id || data.name };
         } catch (error) {
-            console.error('Error saving fixed expense:', error);
+            console.error('Error:', error);
             throw error;
         }
     },
 
     async deleteFixedExpense(id) {
         try {
-            const response = await fetch(`${FIREBASE_URL}/fixedExpenses/${id}.json`, {
+            await fetch(`${FIREBASE_URL}/fixedExpenses/${id}.json`, {
                 method: 'DELETE'
             });
-            await handleResponse(response);
         } catch (error) {
-            console.error('Error deleting fixed expense:', error);
+            console.error('Error:', error);
             throw error;
         }
     },
 
-    // Loan Payments
+    // Loan Payments (Pagos de Préstamos)
     async saveLoanPayment(debtorId, loanId, payment) {
         try {
             const response = await fetch(
                 `${FIREBASE_URL}/payments/${debtorId}/${loanId}.json`, 
                 {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payment)
                 }
             );
@@ -190,7 +167,7 @@ export const firebaseService = {
             const data = await handleResponse(response);
             return { ...payment, id: data.name };
         } catch (error) {
-            console.error('Error saving loan payment:', error);
+            console.error('Error:', error);
             throw error;
         }
     },
@@ -204,8 +181,40 @@ export const firebaseService = {
                 id: key
             })) : [];
         } catch (error) {
-            console.error('Error fetching loan payments:', error);
+            console.error('Error:', error);
             return [];
+        }
+    },
+
+    // Users (Usuarios)
+    async saveUser(user) {
+        try {
+            const response = await fetch(`${FIREBASE_URL}/users.json`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...user,
+                    debtors: {},
+                    creditors: {},
+                    fixedExpenses: {},
+                    payments: {}
+                })
+            });
+            
+            return await handleResponse(response);
+        } catch (error) {
+            console.error('Error:', error);
+            throw error;
+        }
+    },
+
+    async getUserData(userId) {
+        try {
+            const response = await fetch(`${FIREBASE_URL}/users/${userId}.json`);
+            return await handleResponse(response);
+        } catch (error) {
+            console.error('Error:', error);
+            throw error;
         }
     }
 };

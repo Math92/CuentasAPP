@@ -73,114 +73,84 @@ function showAddLoanForm(recordId, parentElement) {
     parentElement.appendChild(form);
 }
 
+// events.js
 export function updateMonthlyOverview() {
     const selectedMonth = document.getElementById('overview-month')?.value;
     if (!selectedMonth) return;
 
-    const [year, month] = selectedMonth.split('-');
-    const monthStart = new Date(year, parseInt(month) - 1, 1);
-    const monthEnd = new Date(year, parseInt(month), 0);
-
-    const incomingPaymentsDiv = document.getElementById('debtors-summary');
-    const outgoingPaymentsDiv = document.getElementById('creditors-summary');
-    const fixedExpensesDiv = document.getElementById('fixed-expenses-summary');
-    const monthlyBalanceDiv = document.getElementById('monthly-balance');
-
-    if (!incomingPaymentsDiv || !outgoingPaymentsDiv || !fixedExpensesDiv || !monthlyBalanceDiv) return;
-
-    incomingPaymentsDiv.innerHTML = '';
-    outgoingPaymentsDiv.innerHTML = '';
-    fixedExpensesDiv.innerHTML = '';
-
+    // Deudores
+    const debtorsSummary = document.getElementById('debtors-summary');
+    debtorsSummary.innerHTML = '';
     let totalIncoming = 0;
-    let totalOutgoing = 0;
-    let totalFixed = 0;
 
-    // Procesar deudores
     state.debtors.forEach(debtor => {
-        const debtorOverview = debtor.getMonthlyOverview(selectedMonth);
-        const monthPayments = debtorOverview.totalPaidInMonth;
+        const overview = debtor.getMonthlyOverview(selectedMonth);
+        totalIncoming += overview.totalOwed;
         
-        if (monthPayments > 0 || debtorOverview.totalOwed > 0) {
-            const debtorDiv = document.createElement('div');
-            debtorDiv.className = 'summary-item';
-            debtorDiv.innerHTML = `
+        debtorsSummary.innerHTML += `
+            <div class="summary-item">
                 <div class="summary-person">
                     <span class="person-name">${debtor.name}</span>
-                    <span class="total-owed">Saldo: $${debtorOverview.totalOwed.toFixed(2)}</span>
+                    <span class="total-owed">Saldo: $${overview.totalOwed.toFixed(2)}</span>
                 </div>
-                <div class="monthly-activity">
-                    <span>Pagos del mes: $${monthPayments.toFixed(2)}</span>
-                </div>
-            `;
-            incomingPaymentsDiv.appendChild(debtorDiv);
-        }
-        
-        totalIncoming += monthPayments;
+            </div>
+        `;
     });
 
-    // Procesar acreedores
+    // Acreedores
+    const creditorsSummary = document.getElementById('creditors-summary');
+    creditorsSummary.innerHTML = '';
+    let totalOutgoing = 0;
+
     state.creditors.forEach(creditor => {
-        const creditorOverview = creditor.getMonthlyOverview(selectedMonth);
-        const monthPayments = creditorOverview.totalPaidInMonth;
+        const overview = creditor.getMonthlyOverview(selectedMonth);
+        totalOutgoing += overview.totalOwed;
         
-        if (monthPayments > 0 || creditorOverview.totalOwed > 0) {
-            const creditorDiv = document.createElement('div');
-            creditorDiv.className = 'summary-item';
-            creditorDiv.innerHTML = `
+        creditorsSummary.innerHTML += `
+            <div class="summary-item">
                 <div class="summary-person">
                     <span class="person-name">${creditor.name}</span>
-                    <span class="total-owed">Saldo: $${creditorOverview.totalOwed.toFixed(2)}</span>
+                    <span class="total-owed">Saldo: $${overview.totalOwed.toFixed(2)}</span>
                 </div>
-                <div class="monthly-activity">
-                    <span>Pagos del mes: $${monthPayments.toFixed(2)}</span>
-                </div>
-            `;
-            outgoingPaymentsDiv.appendChild(creditorDiv);
-        }
-        
-        totalOutgoing += monthPayments;
-    });
-
-    // Procesar gastos fijos
-    state.fixedExpenses.forEach(expense => {
-        const payment = expense.getMonthPayment(selectedMonth);
-        const status = payment ? 'PAGADO' : 'PENDIENTE';
-        
-        const expenseDiv = document.createElement('div');
-        expenseDiv.className = `summary-item ${payment ? 'paid' : 'pending'}`;
-        expenseDiv.innerHTML = `
-            <div class="expense-info">
-                <span class="expense-name">${expense.name}</span>
-                <span class="expense-amount">$${expense.amount.toFixed(2)}</span>
-                <span class="payment-status ${payment ? 'paid' : 'pending'}">${status}</span>
             </div>
-            ${payment ? `
-                <div class="payment-info">
-                    <span>Pagado: ${new Date(payment.date).toLocaleDateString()}</span>
-                    ${payment.amount ? `<span>Monto: $${payment.amount.toFixed(2)}</span>` : ''}
-                </div>
-            ` : ''}
         `;
-        
-        fixedExpensesDiv.appendChild(expenseDiv);
-        if (!payment) {
-            totalFixed += expense.amount;
-        }
     });
 
-    // Actualizar totales y balance
+    // Gastos Fijos
+    const fixedExpensesSummary = document.getElementById('fixed-expenses-summary');
+    fixedExpensesSummary.innerHTML = '';
+    let totalFixed = 0;
+
+    state.fixedExpenses.forEach(expense => {
+        const isPaid = expense.isMonthPaid(selectedMonth);
+        if (!isPaid) totalFixed += expense.amount;
+        
+        fixedExpensesSummary.innerHTML += `
+            <div class="summary-item ${isPaid ? 'paid' : 'pending'}">
+                <div class="expense-info">
+                    <span class="expense-name">${expense.name}</span>
+                    <span class="expense-amount">$${expense.amount.toFixed(2)}</span>
+                    <span class="payment-status ${isPaid ? 'paid' : 'pending'}">
+                        ${isPaid ? 'PAGADO' : 'PENDIENTE'}
+                    </span>
+                </div>
+            </div>
+        `;
+    });
+
+    // Actualizar totales
     document.getElementById('total-to-receive').textContent = `$${totalIncoming.toFixed(2)}`;
     document.getElementById('total-to-pay').textContent = `$${(totalOutgoing + totalFixed).toFixed(2)}`;
-    
-    const totalBalance = totalIncoming - totalOutgoing - totalFixed;
-    monthlyBalanceDiv.innerHTML = `
+
+    // Balance final
+    const balance = totalIncoming - totalOutgoing - totalFixed;
+    document.getElementById('monthly-balance').innerHTML = `
         <div class="balance-details">
-            <p>Total Cobrado: $${totalIncoming.toFixed(2)}</p>
-            <p>Total Pagado: $${totalOutgoing.toFixed(2)}</p>
+            <p>Total a Cobrar: $${totalIncoming.toFixed(2)}</p>
+            <p>Total a Pagar: $${totalOutgoing.toFixed(2)}</p>
             <p>Gastos Fijos Pendientes: $${totalFixed.toFixed(2)}</p>
-            <p class="total-balance ${totalBalance >= 0 ? 'positive' : 'negative'}">
-                Balance Final: $${totalBalance.toFixed(2)}
+            <p class="total-balance ${balance >= 0 ? 'positive' : 'negative'}">
+                Balance Final: $${balance.toFixed(2)}
             </p>
         </div>
     `;
@@ -336,5 +306,4 @@ Object.entries(formIds).forEach(([id, handler]) => {
 
 // Exportar las funciones que necesitan ser globales para el HTML
 window.switchTab = switchTab;
-window.clearAllData = clearAllData;
 window.updateMonthlyOverview = updateMonthlyOverview;

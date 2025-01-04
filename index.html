@@ -8,6 +8,10 @@
 </head>
 <body>
     <div class="container">
+        <!-- Agregar después de <div class="container"> -->
+        <div class="user-bar">
+            <span id="user-email"></span>
+            <button onclick="logoutUser()" class="logout-btn">Cerrar Sesión</button>        </div>
         <div class="tabs">
             <button class="tab active" onclick="switchTab('overview')">Vista General</button>
             <button class="tab" onclick="switchTab('debtors')">Deudores</button>
@@ -173,13 +177,14 @@
             </div>
         </div>
     </template>
-
-    <!-- Botón de emergencia para limpiar datos -->
-    <div class="emergency-actions">
-        <button onclick="clearAllData()" class="danger-button">Limpiar Todos los Datos</button>
-    </div>
-
     <script type="module" src="scripts/init.js"></script>
     <script type="module" src="scripts/firebase-service.js"></script>
+    <script type="module">
+        import { authService } from './scripts/auth.js';
+        window.logoutUser = function() {
+            authService.logout();
+        }
+    </script>
+    
 </body>
 </html>

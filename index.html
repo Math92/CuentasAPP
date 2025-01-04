@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Finanzas Personales</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('overview')">Vista General</button>
+            <button class="tab" onclick="switchTab('debtors')">Deudores</button>
+            <button class="tab" onclick="switchTab('creditors')">Acreedores</button>
+            <button class="tab" onclick="switchTab('fixed-expenses')">Gastos Fijos</button>
+        </div>
+
+        <!-- Sección de Vista General -->
+        <div id="overview-section" style="display: none;">
+            <div class="form-container">
+                <h2>Vista General Mensual</h2>
+                <div class="month-selector">
+                    <label for="overview-month">Seleccionar Mes:</label>
+                    <input type="month" id="overview-month" required>
+                    <button onclick="updateMonthlyOverview()">Ver Resumen</button>
+                </div>
+                <div class="monthly-summary">
+                    <div class="summary-section">
+                        <h3>Pagos a Recibir</h3>
+                        <div id="incoming-payments"></div>
+                    </div>
+                    <div class="summary-section">
+                        <h3>Pagos a Realizar</h3>
+                        <div id="outgoing-payments"></div>
+                    </div>
+                    <div class="summary-section">
+                        <h3>Gastos Fijos del Mes</h3>
+                        <div id="fixed-expenses-summary"></div>
+                    </div>
+                    <div class="balance-summary">
+                        <h3>Balance Mensual Estimado</h3>
+                        <div id="monthly-balance"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Deudores -->
+        <div id="debtors-section">
+            <div class="form-container">
+                <h2>Agregar Nuevo Deudor</h2>
+                <form id="debtor-form">
+                    <div class="form-group">
+                        <label for="debtor-name">Nombre:</label>
+                        <input type="text" id="debtor-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="debt-amount">Monto Total:</label>
+                        <input type="number" id="debt-amount" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="monthly-payment">Pago Mensual:</label>
+                        <input type="number" id="monthly-payment" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="start-date">Fecha de Inicio:</label>
+                        <input type="date" id="start-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="debtor-details">Detalles:</label>
+                        <textarea id="debtor-details" rows="3"></textarea>
+                    </div>
+                    <button type="submit">Agregar Deudor</button>
+                </form>
+            </div>
+            <div id="debtors-list" class="records-container">
+                <!-- Aquí se mostrarán los deudores -->
+            </div>
+        </div>
+
+        <!-- Sección de Acreedores -->
+        <div id="creditors-section" style="display: none;">
+            <div class="form-container">
+                <h2>Agregar Nuevo Acreedor</h2>
+                <form id="creditor-form">
+                    <div class="form-group">
+                        <label for="creditor-name">Nombre:</label>
+                        <input type="text" id="creditor-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="credit-amount">Monto Total:</label>
+                        <input type="number" id="credit-amount" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="monthly-payment-creditor">Pago Mensual:</label>
+                        <input type="number" id="monthly-payment-creditor" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="start-date-creditor">Fecha de Inicio:</label>
+                        <input type="date" id="start-date-creditor" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="creditor-details">Detalles:</label>
+                        <textarea id="creditor-details" rows="3"></textarea>
+                    </div>
+                    <button type="submit">Agregar Acreedor</button>
+                </form>
+            </div>
+            <div id="creditors-list" class="records-container">
+                <!-- Aquí se mostrarán los acreedores -->
+            </div>
+        </div>
+
+        <!-- Sección de Gastos Fijos -->
+        <div id="fixed-expenses-section" style="display: none;">
+            <div class="form-container">
+                <h2>Gestionar Gastos Fijos</h2>
+                <form id="fixed-expense-form">
+                    <div class="form-group">
+                        <label for="expense-name">Nombre del Gasto:</label>
+                        <input type="text" id="expense-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-amount">Monto:</label>
+                        <input type="number" id="expense-amount" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-day">Día del mes para pago:</label>
+                        <input type="number" id="expense-day" min="1" max="31" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-details">Detalles:</label>
+                        <textarea id="expense-details" rows="3"></textarea>
+                    </div>
+                    <button type="submit">Agregar Gasto Fijo</button>
+                </form>
+            </div>
+            <div id="fixed-expenses-list" class="records-container">
+                <!-- Aquí se mostrarán los gastos fijos -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón de emergencia para limpiar datos -->
+    <div class="emergency-actions" style="margin-top: 20px; text-align: center;">
+        <button onclick="clearAllData()" style="background-color: var(--error-color);">Limpiar Todos los Datos</button>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

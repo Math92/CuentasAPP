@@ -1,7 +1,7 @@
 import { Loan, DebtRecord, FixedExpense } from './base.js';
+import { firebaseService } from './firebase-service.js';
+import { updateUI, updateMonthlyOverview } from './events.js';
 
-
-// Estado de la aplicación
 export const state = {
     debtors: [],
     creditors: [],
@@ -9,10 +9,8 @@ export const state = {
     currentTab: 'overview'
 };
 
-// Función para convertir objetos planos a instancias de clase
 export function convertToInstance(obj, type) {
     if (!obj) return null;
-
     let instance;
     
     switch(type) {
@@ -35,7 +33,6 @@ export function convertToInstance(obj, type) {
             );
             instance.id = obj.id;
             
-            // Convertir los préstamos
             if (obj.loans && Array.isArray(obj.loans)) {
                 instance.loans = obj.loans.map(loanObj => {
                     const loan = new Loan(
@@ -59,7 +56,6 @@ export function convertToInstance(obj, type) {
     return instance;
 }
 
-// Funciones auxiliares
 export function getNext12Months() {
     const months = [];
     const today = new Date();
@@ -81,56 +77,89 @@ export function isMonthCurrentOrFuture(yearMonth) {
     return checkDate >= firstDayOfCurrentMonth;
 }
 
-// Funciones de persistencia
-export function saveState() {
+export async function saveState() {
     try {
-        localStorage.setItem('financeTrackerState', JSON.stringify(state));
+        const savePromises = [
+            ...state.debtors.map(async debtor => {
+                const savedDebtor = await firebaseService.saveDebtor(debtor);
+                return savedDebtor;
+            }),
+            ...state.creditors.map(async creditor => {
+                const savedCreditor = await firebaseService.saveCreditor(creditor);
+                return savedCreditor;
+            }),
+            ...state.fixedExpenses.map(async expense => {
+                const savedExpense = await firebaseService.saveFixedExpense(expense);
+                return savedExpense;
+            })
+        ];
+
+        await Promise.all(savePromises);
+        await updateUI();
     } catch (error) {
         console.error('Error saving state:', error);
+        throw error;
     }
 }
 
-export function loadState() {
+export async function loadState() {
     try {
-        const savedState = localStorage.getItem('financeTrackerState');
-        if (savedState) {
-            const parsedState = JSON.parse(savedState);
-            
-            state.debtors = (parsedState.debtors || [])
-                .map(obj => convertToInstance(obj, 'DebtRecord'))
-                .filter(Boolean);
-                
-            state.creditors = (parsedState.creditors || [])
-                .map(obj => convertToInstance(obj, 'DebtRecord'))
-                .filter(Boolean);
-                
-            state.fixedExpenses = (parsedState.fixedExpenses || [])
-                .map(obj => convertToInstance(obj, 'FixedExpense'))
-                .filter(Boolean);
-        }
+        const [debtors, creditors, fixedExpenses] = await Promise.all([
+            firebaseService.getDebtors(),
+            firebaseService.getCreditors(),
+            firebaseService.getFixedExpenses()
+        ]);
+
+        state.debtors = debtors.map(obj => convertToInstance(obj, 'DebtRecord')).filter(Boolean);
+        state.creditors = creditors.map(obj => convertToInstance(obj, 'DebtRecord')).filter(Boolean);
+        state.fixedExpenses = fixedExpenses.map(obj => convertToInstance(obj, 'FixedExpense')).filter(Boolean);
+        
+        await updateUI();
     } catch (error) {
         console.error('Error loading state:', error);
-        clearAllData();
+        await clearAllData();
     }
 }
 
-function clearAllData() {
-    state.debtors = [];
-    state.creditors = [];
-    state.fixedExpenses = [];
-    localStorage.removeItem('financeTrackerState');
-    updateUI();
+export async function clearAllData() {
+    try {
+        const deletePromises = [
+            ...state.debtors.map(debtor => firebaseService.deleteDebtor(debtor.id)),
+            ...state.creditors.map(creditor => firebaseService.deleteCreditor(creditor.id)),
+            ...state.fixedExpenses.map(expense => firebaseService.deleteFixedExpense(expense.id))
+        ];
+        
+        await Promise.all(deletePromises);
+        state.debtors = [];
+        state.creditors = [];
+        state.fixedExpenses = [];
+        await updateUI();
+    } catch (error) {
+        console.error('Error clearing data:', error);
+        throw error;
+    }
 }
 
-// Función para cambiar entre pestañas
-function switchTab(tab) {
+export async function addPaymentToLoan(debtorId, loanId, payment) {
+    try {
+        const savedPayment = await firebaseService.saveLoanPayment(debtorId, loanId, payment);
+        await updateUI();
+        return savedPayment;
+    } catch (error) {
+        console.error('Error saving payment:', error);
+        throw error;
+    }
+}
+
+export function switchTab(tab) {
     state.currentTab = tab;
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelector(`button[onclick="switchTab('${tab}')"]`).classList.add('active');
     
-    ['debtors-section', 'creditors-section', 'fixed-expenses-section', 'overview-section'].forEach(section => {
-        document.getElementById(section).style.display = 'none';
-    });
+    ['debtors-section', 'creditors-section', 'fixed-expenses-section', 'overview-section']
+        .forEach(section => {
+            document.getElementById(section).style.display = 'none';
+        });
     
     document.getElementById(`${tab}-section`).style.display = 'block';
     
@@ -138,3 +167,5 @@ function switchTab(tab) {
         updateMonthlyOverview();
     }
 }
+
+export { updateUI, updateMonthlyOverview };

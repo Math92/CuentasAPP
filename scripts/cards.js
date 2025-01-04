@@ -1,5 +1,6 @@
 import { state, saveState, getNext12Months, isMonthCurrentOrFuture } from './states.js';
 import { updateUI } from './events.js';
+import { firebaseService } from './firebase-service.js';
 
 // Función para crear una tarjeta de registro de deuda/crédito
 export function createRecordCard(record, isDebtor) {
@@ -7,9 +8,17 @@ export function createRecordCard(record, isDebtor) {
     card.className = 'record-card';
     card.dataset.recordId = record.id;
     
+    const header = document.createElement('div');
+    header.className = 'card-header';
+    
     const title = document.createElement('h3');
     title.textContent = record.name;
-    card.appendChild(title);
+    
+    const deleteButton = createDeleteButton(record, isDebtor ? 'deudor' : 'acreedor');
+    
+    header.appendChild(title);
+    header.appendChild(deleteButton);
+    card.appendChild(header);
 
     // Mostrar total adeudado
     const totalAmount = document.createElement('p');
@@ -182,12 +191,15 @@ export function createFixedExpenseCard(expense) {
     
     const header = document.createElement('div');
     header.className = 'card-header';
-    header.innerHTML = `
-        <h3>${expense.name}</h3>
-        <p class="expense-amount">Monto Mensual: $${expense.amount.toFixed(2)}</p>
-        <p class="payment-day">Día de pago: ${expense.paymentDay}</p>
-        <p class="expense-details">${expense.details || 'Sin detalles'}</p>
-    `;
+    
+    const title = document.createElement('h3');
+    title.textContent = expense.name;
+    
+    const deleteButton = createDeleteButton(expense, 'gasto fijo');
+    
+    header.appendChild(title);
+    header.appendChild(deleteButton);
+    card.appendChild(header);
     
     // Sección de registro de pagos
     const paymentSection = document.createElement('div');
@@ -262,4 +274,35 @@ function createExpenseHistory(expense) {
     });
     
     return historySection;
+}
+
+function createDeleteButton(record, type) {
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'delete-btn';
+    deleteButton.innerHTML = '🗑️ Eliminar';
+    deleteButton.onclick = async () => {
+        if (confirm(`¿Estás seguro de eliminar este registro de ${type}?`)) {
+            try {
+                switch (type) {
+                    case 'deudor':
+                        await firebaseService.deleteDebtor(record.id);
+                        state.debtors = state.debtors.filter(d => d.id !== record.id);
+                        break;
+                    case 'acreedor':
+                        await firebaseService.deleteCreditor(record.id);
+                        state.creditors = state.creditors.filter(c => c.id !== record.id);
+                        break;
+                    case 'gasto fijo':
+                        await firebaseService.deleteFixedExpense(record.id);
+                        state.fixedExpenses = state.fixedExpenses.filter(e => e.id !== record.id);
+                        break;
+                }
+                updateUI();
+            } catch (error) {
+                console.error('Error al eliminar:', error);
+                alert('Error al eliminar el registro');
+            }
+        }
+    };
+    return deleteButton;
 }

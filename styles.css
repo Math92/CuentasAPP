@@ -356,3 +356,30 @@ button:hover {
 .hidden {
     display: none !important;
 }
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.delete-btn {
+    background-color: var(--error-color);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.delete-btn:hover {
+    opacity: 1;
+    background-color: #e74c3c;
+}
+
+.card-header h3 {
+    margin: 0;
+    flex: 1;
+}

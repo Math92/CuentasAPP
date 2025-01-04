@@ -1,0 +1,32 @@
+/* styles/variables.css */
+:root {
+    /* Color Palette */
+    --primary-color: #2c3e50;
+    --secondary-color: #34495e;
+    --accent-color: #3498db;
+    --accent-hover: #2980b9;
+    --text-primary: #ecf0f1;
+    --text-secondary: #bdc3c7;
+    --background-dark: #1a1a1a;
+    --background-light: #2c2c2c;
+    --card-background: #2d3436;
+    --border-color: #3d3d3d;
+    --success-color: #27ae60;
+    --warning-color: #f1c40f;
+    --error-color: #e74c3c;
+
+    /* Shadows */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+    /* Transitions */
+    --transition-fast: 150ms ease;
+    --transition-normal: 250ms ease;
+    --transition-slow: 350ms ease;
+
+    /* Border Radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+}

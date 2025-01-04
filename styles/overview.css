@@ -1,0 +1,30 @@
+/* styles/overview.css */
+.overview-section {
+    padding: 30px;
+    background: var(--card-background);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.monthly-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.balance-summary {
+    grid-column: 1 / -1;
+    background: var(--card-background);
+    padding: 30px;
+    border-radius: var(--radius-lg);
+    margin-top: 30px;
+    border: 1px solid var(--border-color);
+}
+
+.amount-display {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--accent-color);
+}

@@ -217,3 +217,243 @@
 .summary-section:nth-child(1) { animation-delay: 0.1s; }
 .summary-section:nth-child(2) { animation-delay: 0.2s; }
 .summary-section:nth-child(3) { animation-delay: 0.3s; }
+
+
+/* Agregar al final de styles/overview.css */
+
+/* Media Queries para Responsive
+   ========================================================================== */
+
+/* Tablets y pantallas medianas */
+@media screen and (max-width: 992px) {
+    .overview-container {
+        padding: 20px;
+    }
+
+    .overview-title {
+        font-size: 1.75rem;
+    }
+
+    .month-selector {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .month-selector input[type="month"] {
+        width: 100%;
+        max-width: none;
+    }
+
+    .balance-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Dispositivos móviles */
+@media screen and (max-width: 768px) {
+    .overview-container {
+        padding: 15px;
+    }
+
+    .overview-title {
+        font-size: 1.5rem;
+        text-align: center;
+    }
+
+    /* Selector de mes */
+    .month-selector {
+        flex-direction: column;
+        padding: 15px;
+    }
+
+    .month-selector button {
+        width: 100%;
+    }
+
+    /* Secciones de resumen */
+    .summary-section {
+        margin-bottom: 20px;
+    }
+
+    .section-header {
+        padding: 15px;
+    }
+
+    .section-header h2 {
+        font-size: 1.1rem;
+    }
+
+    /* Items de resumen */
+    .summary-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+
+    .item-info {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .item-amount {
+        font-size: 1.2rem;
+    }
+
+    /* Balance grid */
+    .balance-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .balance-item {
+        padding: 15px;
+    }
+
+    .final-balance {
+        padding: 20px 15px;
+    }
+
+    .balance-amount {
+        font-size: 1.75rem;
+    }
+}
+
+/* Dispositivos muy pequeños */
+@media screen and (max-width: 480px) {
+    .overview-container {
+        padding: 10px;
+    }
+
+    .overview-title {
+        font-size: 1.25rem;
+        margin-bottom: 15px;
+    }
+
+    .section-content {
+        padding: 15px;
+    }
+
+    .summary-item {
+        padding: 12px;
+    }
+
+    .item-name {
+        font-size: 1rem;
+    }
+
+    .item-amount {
+        font-size: 1.1rem;
+    }
+
+    .payment-status {
+        font-size: 0.75rem;
+        padding: 3px 6px;
+    }
+
+    .balance-item .item-value {
+        font-size: 1.2rem;
+    }
+
+    .final-balance {
+        margin-top: 15px;
+    }
+
+    .balance-label {
+        font-size: 1rem;
+    }
+
+    .balance-amount {
+        font-size: 1.5rem;
+    }
+}
+
+/* Ajustes específicos para gastos fijos en móvil */
+@media screen and (max-width: 768px) {
+    .fixed-expenses-section .summary-item {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .expense-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .expense-name {
+        text-align: center;
+        width: 100%;
+    }
+
+    .expense-amount {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+}
+
+/* Ajustes para los montos pendientes */
+@media screen and (max-width: 768px) {
+    .total-to-receive,
+    .total-to-pay,
+    .fixed-expenses-pending {
+        padding: 15px;
+        text-align: center;
+        background: var(--background-light);
+        border-radius: var(--radius-md);
+        margin-bottom: 15px;
+    }
+
+    .final-balance {
+        padding: 20px 15px;
+    }
+
+    .final-balance .balance-amount {
+        font-size: 1.75rem;
+        line-height: 1.2;
+    }
+}
+
+/* Ajustes para la navegación en móvil */
+@media screen and (max-width: 768px) {
+    .tabs {
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .tab {
+        width: 100%;
+        text-align: center;
+        padding: 12px;
+    }
+}
+
+/* Ajustes adicionales para vista de gastos en móvil */
+@media screen and (max-width: 768px) {
+    .summary-item.pending,
+    .summary-item.paid {
+        position: relative;
+        padding-left: 15px;
+    }
+
+    .summary-item.pending::before,
+    .summary-item.paid::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        border-radius: 2px;
+    }
+
+    .summary-item.pending::before {
+        background-color: var(--warning-color);
+    }
+
+    .summary-item.paid::before {
+        background-color: var(--success-color);
+    }
+}

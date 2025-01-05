@@ -1,6 +1,15 @@
+// events.js
 import { state, saveState, loadState } from './states.js';
 import { createRecordCard, createFixedExpenseCard } from './cards.js';
 import { DebtRecord, FixedExpense } from './base.js';
+
+// Función para formatear moneda
+const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('es-AR', {
+        style: 'currency',
+        currency: 'ARS'
+    }).format(amount);
+};
 
 // Función para registrar un nuevo pago
 export function registerPayment(recordId, loanId, amount, date, details) {
@@ -19,145 +28,176 @@ export function registerPayment(recordId, loanId, amount, date, details) {
     }
 }
 
-// Función para mostrar el formulario de nuevo préstamo
-function showAddLoanForm(recordId, parentElement) {
-    // Eliminar formulario existente si hay uno
-    const existingForm = parentElement.querySelector('.add-loan-form');
-    if (existingForm) existingForm.remove();
-
-    const form = document.createElement('div');
-    form.className = 'add-loan-form';
-    form.innerHTML = `
-        <form class="loan-form">
-            <div class="form-group">
-                <label>Monto:</label>
-                <input type="number" step="0.01" class="amount-input" required>
-            </div>
-            <div class="form-group">
-                <label>Fecha:</label>
-                <input type="date" class="date-input" required value="${new Date().toISOString().split('T')[0]}">
-            </div>
-            <div class="form-group">
-                <label>Descripción/Razón:</label>
-                <input type="text" class="description-input" required>
-            </div>
-            <div class="form-actions">
-                <button type="submit">Guardar</button>
-                <button type="button" class="cancel-btn">Cancelar</button>
-            </div>
-        </form>
-    `;
-    
-    const loanForm = form.querySelector('form');
-    const cancelBtn = form.querySelector('.cancel-btn');
-    
-    loanForm.onsubmit = (e) => {
-        e.preventDefault();
-        const amount = e.target.querySelector('.amount-input').value;
-        const date = e.target.querySelector('.date-input').value;
-        const description = e.target.querySelector('.description-input').value;
-        
-        const record = [...state.debtors, ...state.creditors].find(r => r.id === recordId);
-        
-        if (record) {
-            record.addLoan(amount, date, description);
-            saveState();
-            updateUI();
-        }
-        
-        form.remove();
-    };
-    
-    cancelBtn.onclick = () => form.remove();
-    
-    parentElement.appendChild(form);
-}
-
-// events.js
+// Vista General Mensual
 export function updateMonthlyOverview() {
     const selectedMonth = document.getElementById('overview-month')?.value;
     if (!selectedMonth) return;
 
-    // Deudores
-    const debtorsSummary = document.getElementById('debtors-summary');
-    debtorsSummary.innerHTML = '';
+    const overviewContainer = document.getElementById('overview-section');
+    overviewContainer.innerHTML = `
+        <div class="overview-container">
+            <h1 class="overview-title">Vista General Mensual</h1>
+            
+            <!-- Selector de Mes -->
+            <div class="month-selector">
+                <label for="overview-month">Seleccionar Mes:</label>
+                <input type="month" id="overview-month" value="${selectedMonth}" required>
+                <button onclick="updateMonthlyOverview()" class="update-btn">Actualizar Vista</button>
+            </div>
+
+            <!-- Sección Deudores -->
+            <div class="summary-section debtors-section">
+                <div class="section-header">
+                    <h2>Deudores - Dinero a Recibir</h2>
+                </div>
+                <div class="section-content" id="debtors-summary">
+                    ${generateDebtorsSummary(selectedMonth)}
+                </div>
+            </div>
+
+            <!-- Sección Acreedores -->
+            <div class="summary-section creditors-section">
+                <div class="section-header">
+                    <h2>Acreedores - Dinero a Pagar</h2>
+                </div>
+                <div class="section-content" id="creditors-summary">
+                    ${generateCreditorsSummary(selectedMonth)}
+                </div>
+            </div>
+
+            <!-- Sección Gastos Fijos -->
+            <div class="summary-section fixed-expenses-section">
+                <div class="section-header">
+                    <h2>Gastos Fijos del Mes</h2>
+                </div>
+                <div class="section-content" id="fixed-expenses-summary">
+                    ${generateFixedExpensesSummary(selectedMonth)}
+                </div>
+            </div>
+
+            ${generateBalanceSection()}
+        </div>
+    `;
+
+    // Re-asignar el evento al selector de mes
+    const monthSelector = document.getElementById('overview-month');
+    if (monthSelector) {
+        monthSelector.value = selectedMonth;
+        monthSelector.addEventListener('change', updateMonthlyOverview);
+    }
+}
+
+// Generar resumen de deudores
+function generateDebtorsSummary(selectedMonth) {
+    let html = '';
     let totalIncoming = 0;
 
     state.debtors.forEach(debtor => {
         const overview = debtor.getMonthlyOverview(selectedMonth);
         totalIncoming += overview.totalOwed;
         
-        debtorsSummary.innerHTML += `
+        html += `
             <div class="summary-item">
-                <div class="summary-person">
-                    <span class="person-name">${debtor.name}</span>
-                    <span class="total-owed">Saldo: $${overview.totalOwed.toFixed(2)}</span>
+                <div class="item-info">
+                    <span class="item-name">${debtor.name}</span>
+                    <div class="item-details">
+                        <span class="loan-count">Préstamos activos: ${overview.activeLoansCount}</span>
+                    </div>
                 </div>
+                <div class="item-amount">${formatCurrency(overview.totalOwed)}</div>
             </div>
         `;
     });
 
-    // Acreedores
-    const creditorsSummary = document.getElementById('creditors-summary');
-    creditorsSummary.innerHTML = '';
+    window.totalIncoming = totalIncoming; // Para usar en el balance final
+    return html || '<div class="empty-state">No hay deudores registrados</div>';
+}
+
+// Generar resumen de acreedores
+function generateCreditorsSummary(selectedMonth) {
+    let html = '';
     let totalOutgoing = 0;
 
     state.creditors.forEach(creditor => {
         const overview = creditor.getMonthlyOverview(selectedMonth);
         totalOutgoing += overview.totalOwed;
         
-        creditorsSummary.innerHTML += `
+        html += `
             <div class="summary-item">
-                <div class="summary-person">
-                    <span class="person-name">${creditor.name}</span>
-                    <span class="total-owed">Saldo: $${overview.totalOwed.toFixed(2)}</span>
+                <div class="item-info">
+                    <span class="item-name">${creditor.name}</span>
+                    <div class="item-details">
+                        <span class="loan-count">Créditos activos: ${overview.activeLoansCount}</span>
+                    </div>
                 </div>
+                <div class="item-amount">${formatCurrency(overview.totalOwed)}</div>
             </div>
         `;
     });
 
-    // Gastos Fijos
-    const fixedExpensesSummary = document.getElementById('fixed-expenses-summary');
-    fixedExpensesSummary.innerHTML = '';
+    window.totalOutgoing = totalOutgoing; // Para usar en el balance final
+    return html || '<div class="empty-state">No hay acreedores registrados</div>';
+}
+
+// Generar resumen de gastos fijos
+function generateFixedExpensesSummary(selectedMonth) {
+    let html = '';
     let totalFixed = 0;
 
     state.fixedExpenses.forEach(expense => {
         const isPaid = expense.isMonthPaid(selectedMonth);
         if (!isPaid) totalFixed += expense.amount;
         
-        fixedExpensesSummary.innerHTML += `
+        html += `
             <div class="summary-item ${isPaid ? 'paid' : 'pending'}">
-                <div class="expense-info">
-                    <span class="expense-name">${expense.name}</span>
-                    <span class="expense-amount">$${expense.amount.toFixed(2)}</span>
-                    <span class="payment-status ${isPaid ? 'paid' : 'pending'}">
+                <div class="item-info">
+                    <span class="item-name">${expense.name}</span>
+                    <span class="payment-status ${isPaid ? 'status-paid' : 'status-pending'}">
                         ${isPaid ? 'PAGADO' : 'PENDIENTE'}
                     </span>
                 </div>
+                <div class="item-amount">${formatCurrency(expense.amount)}</div>
             </div>
         `;
     });
 
-    // Actualizar totales
-    document.getElementById('total-to-receive').textContent = `$${totalIncoming.toFixed(2)}`;
-    document.getElementById('total-to-pay').textContent = `$${(totalOutgoing + totalFixed).toFixed(2)}`;
+    window.totalFixed = totalFixed; // Para usar en el balance final
+    return html || '<div class="empty-state">No hay gastos fijos registrados</div>';
+}
 
-    // Balance final
-    const balance = totalIncoming - totalOutgoing - totalFixed;
-    document.getElementById('monthly-balance').innerHTML = `
-        <div class="balance-details">
-            <p>Total a Cobrar: $${totalIncoming.toFixed(2)}</p>
-            <p>Total a Pagar: $${totalOutgoing.toFixed(2)}</p>
-            <p>Gastos Fijos Pendientes: $${totalFixed.toFixed(2)}</p>
-            <p class="total-balance ${balance >= 0 ? 'positive' : 'negative'}">
-                Balance Final: $${balance.toFixed(2)}
-            </p>
+// Generar sección de balance
+function generateBalanceSection() {
+    const totalIncoming = window.totalIncoming || 0;
+    const totalOutgoing = window.totalOutgoing || 0;
+    const totalFixed = window.totalFixed || 0;
+    const finalBalance = totalIncoming - totalOutgoing - totalFixed;
+
+    return `
+        <div class="balance-section">
+            <div class="balance-grid">
+                <div class="balance-item incoming">
+                    <div class="item-label">Total a Cobrar</div>
+                    <div class="item-value">${formatCurrency(totalIncoming)}</div>
+                </div>
+                <div class="balance-item outgoing">
+                    <div class="item-label">Total a Pagar</div>
+                    <div class="item-value">${formatCurrency(totalOutgoing)}</div>
+                </div>
+                <div class="balance-item fixed">
+                    <div class="item-label">Gastos Fijos Pendientes</div>
+                    <div class="item-value">${formatCurrency(totalFixed)}</div>
+                </div>
+            </div>
+            <div class="final-balance ${finalBalance >= 0 ? 'positive' : 'negative'}">
+                <div class="balance-label">Balance Final</div>
+                <div class="balance-amount">${formatCurrency(finalBalance)}</div>
+            </div>
         </div>
     `;
 }
 
+// Actualizar UI
 export function updateUI() {
-    // Limpiar y actualizar listas
     const sections = {
         'debtors-list': (list) => {
             state.debtors.forEach(debtor => {
@@ -184,24 +224,15 @@ export function updateUI() {
         }
     });
 
-    // Actualizar vista general
     updateMonthlyOverview();
 }
 
-// En events.js - añadir la función y su exportación
-export function clearAllData() {
-    state.debtors = [];
-    state.creditors = [];
-    state.fixedExpenses = [];
-    localStorage.removeItem('financeTrackerState');
-    updateUI();
-}
 
-// También necesitas exportar switchTab que está siendo usada pero no está definida
+// Cambiar de pestaña
 export function switchTab(tab) {
     state.currentTab = tab;
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelector(`button[onclick="switchTab('${tab}')"]`).classList.add('active');
+    document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active');
     
     ['debtors-section', 'creditors-section', 'fixed-expenses-section', 'overview-section'].forEach(section => {
         document.getElementById(section).style.display = 'none';
@@ -214,15 +245,12 @@ export function switchTab(tab) {
     }
 }
 
-// Event Listeners
-document.addEventListener('DOMContentLoaded', () => {
-    loadState();
-    
+// Inicialización
+document.addEventListener('DOMContentLoaded', async () => {
     try {
-        // Inicializar en vista general
+        await loadState();
         switchTab('overview');
         
-        // Establecer mes actual
         const currentDate = new Date();
         const currentMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
         const overviewMonth = document.getElementById('overview-month');
@@ -230,16 +258,14 @@ document.addEventListener('DOMContentLoaded', () => {
             overviewMonth.value = currentMonth;
             updateMonthlyOverview();
         }
-
-        updateUI();
     } catch (error) {
-        console.error('Error during initialization:', error);
+        console.error('Error durante la inicialización:', error);
         clearAllData();
     }
 });
 
-// Event Listener para formularios
-const formIds = {
+// Manejadores de formularios
+const formHandlers = {
     'fixed-expense-form': (e) => {
         e.preventDefault();
         const expense = new FixedExpense(
@@ -261,7 +287,6 @@ const formIds = {
             document.getElementById('debtor-details').value
         );
         
-        // Agregar el primer préstamo
         debtor.addLoan(
             document.getElementById('debt-amount').value,
             document.getElementById('start-date').value,
@@ -281,7 +306,6 @@ const formIds = {
             document.getElementById('creditor-details').value
         );
         
-        // Agregar el primer préstamo
         creditor.addLoan(
             document.getElementById('credit-amount').value,
             document.getElementById('credit-date').value,
@@ -296,14 +320,13 @@ const formIds = {
     }
 };
 
-Object.entries(formIds).forEach(([id, handler]) => {
+Object.entries(formHandlers).forEach(([id, handler]) => {
     const form = document.getElementById(id);
     if (form) {
         form.addEventListener('submit', handler);
     }
 });
 
-
-// Exportar las funciones que necesitan ser globales para el HTML
+// Exportar funciones globales
 window.switchTab = switchTab;
 window.updateMonthlyOverview = updateMonthlyOverview;

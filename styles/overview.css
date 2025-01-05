@@ -1,30 +1,219 @@
 /* styles/overview.css */
-.overview-section {
+
+/* Vista General Container */
+.overview-container {
     padding: 30px;
     background: var(--card-background);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
 }
 
-.monthly-summary {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-    margin-top: 30px;
+/* Título Principal */
+.overview-title {
+    font-size: 2rem;
+    color: var(--text-primary);
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--accent-color);
 }
 
-.balance-summary {
-    grid-column: 1 / -1;
-    background: var(--card-background);
-    padding: 30px;
-    border-radius: var(--radius-lg);
-    margin-top: 30px;
-    border: 1px solid var(--border-color);
+/* Selector de Mes */
+.month-selector {
+    background: var(--background-light);
+    padding: 20px;
+    border-radius: var(--radius-md);
+    margin-bottom: 30px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
 }
 
-.amount-display {
-    font-family: 'Roboto Mono', monospace;
-    font-size: 1.2rem;
+.month-selector label {
     font-weight: 600;
-    color: var(--accent-color);
+    color: var(--text-primary);
 }
+
+.month-selector input {
+    flex: 1;
+    max-width: 200px;
+}
+
+/* Secciones Principales */
+.summary-section {
+    background: var(--background-light);
+    border-radius: var(--radius-md);
+    margin-bottom: 25px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.summary-section:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Deudores - Sección Verde */
+.debtors-section {
+    border-left: 4px solid var(--success-color);
+}
+
+.debtors-section .section-header {
+    background: linear-gradient(45deg, var(--success-color) 0%, transparent 100%);
+}
+
+/* Acreedores - Sección Roja */
+.creditors-section {
+    border-left: 4px solid var(--error-color);
+}
+
+.creditors-section .section-header {
+    background: linear-gradient(45deg, var(--error-color) 0%, transparent 100%);
+}
+
+/* Gastos Fijos - Sección Azul */
+.fixed-expenses-section {
+    border-left: 4px solid var(--accent-color);
+}
+
+.fixed-expenses-section .section-header {
+    background: linear-gradient(45deg, var(--accent-color) 0%, transparent 100%);
+}
+
+/* Encabezados de Sección */
+.section-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.section-header h2 {
+    font-size: 1.3rem;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+/* Contenido de la Sección */
+.section-content {
+    padding: 20px;
+}
+
+/* Items de Resumen */
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-radius: var(--radius-sm);
+    background: var(--card-background);
+    margin-bottom: 10px;
+}
+
+.summary-item:last-child {
+    margin-bottom: 0;
+}
+
+.item-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.item-amount {
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 600;
+}
+
+/* Estado de Pagos */
+.payment-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+.status-pending {
+    background-color: var(--warning-color);
+    color: var(--background-dark);
+}
+
+.status-paid {
+    background-color: var(--success-color);
+    color: white;
+}
+
+/* Balance Final */
+.balance-section {
+    background: var(--card-background);
+    padding: 25px;
+    border-radius: var(--radius-md);
+    margin-top: 30px;
+}
+
+.balance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.balance-item {
+    background: var(--background-light);
+    padding: 20px;
+    border-radius: var(--radius-sm);
+    text-align: center;
+}
+
+.balance-item .item-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+.balance-item .item-value {
+    font-size: 1.4rem;
+    font-weight: 600;
+    font-family: 'Roboto Mono', monospace;
+}
+
+.final-balance {
+    text-align: center;
+    padding: 25px;
+    background: linear-gradient(45deg, var(--accent-color), var(--accent-hover));
+    border-radius: var(--radius-md);
+    margin-top: 20px;
+}
+
+.final-balance .balance-label {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 10px;
+}
+
+.final-balance .balance-amount {
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    font-family: 'Roboto Mono', monospace;
+}
+
+.balance-positive .balance-amount {
+    color: var(--success-color);
+}
+
+.balance-negative .balance-amount {
+    color: var(--error-color);
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.summary-section {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+.summary-section:nth-child(1) { animation-delay: 0.1s; }
+.summary-section:nth-child(2) { animation-delay: 0.2s; }
+.summary-section:nth-child(3) { animation-delay: 0.3s; }

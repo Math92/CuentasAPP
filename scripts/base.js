@@ -7,21 +7,33 @@ export class Loan {
         this.description = description;
         this.payments = [];
         this.remainingAmount = this.amount;
-        this.status = 'active'; // active, completed, cancelled
+        this.status = 'active'; // active, completed
     }
 
     addPayment(amount, date, details = '') {
+        // Validar el monto del pago
+        const paymentAmount = parseFloat(amount);
+        if (paymentAmount <= 0) {
+            throw new Error('El monto del pago debe ser mayor a 0');
+        }
+        if (paymentAmount > this.remainingAmount) {
+            throw new Error(`El pago excede el monto restante. Máximo a pagar: ${this.remainingAmount}`);
+        }
+
         const payment = {
             id: Date.now() + Math.random().toString(36).substr(2, 9),
-            amount: parseFloat(amount),
+            amount: paymentAmount,
             date: date,
             details: details
         };
+        
         this.payments.push(payment);
-        this.remainingAmount -= payment.amount;
+        this.remainingAmount = parseFloat((this.remainingAmount - paymentAmount).toFixed(2));
 
+        // Actualizar estado si está completamente pagado
         if (this.remainingAmount <= 0) {
             this.status = 'completed';
+            this.remainingAmount = 0; // Asegurar que no quede negativo
         }
 
         return payment;
@@ -39,6 +51,10 @@ export class Loan {
     getTotalPaidInMonth(yearMonth) {
         const monthPayments = this.getPaymentsInMonth(yearMonth);
         return monthPayments.reduce((sum, payment) => sum + payment.amount, 0);
+    }
+
+    getTotalPaid() {
+        return this.payments.reduce((sum, payment) => sum + payment.amount, 0);
     }
 }
 
@@ -65,9 +81,17 @@ export class DebtRecord {
             throw new Error('Préstamo no encontrado');
         }
 
-        const payment = loan.addPayment(amount, date, details);
-        this.updateTotalOwed();
-        return payment;
+        if (loan.status === 'completed') {
+            throw new Error('Este préstamo ya está completamente pagado');
+        }
+
+        try {
+            const payment = loan.addPayment(amount, date, details);
+            this.updateTotalOwed();
+            return payment;
+        } catch (error) {
+            throw error;
+        }
     }
 
     updateTotalOwed() {

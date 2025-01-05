@@ -26,12 +26,12 @@
   }
   
   .auth-header h1 {
+    color: var(--text-primary);
     font-size: 2rem;
     margin-bottom: 10px;
-    background: linear-gradient(45deg, var(--accent-color), var(--accent-hover));
-    
-    -webkit-text-fill-color: transparent;
-  }
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all var(--transition-normal);
+}
   
   .auth-header p {
     color: var(--text-secondary);
@@ -79,11 +79,12 @@
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all var(--transition-normal);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     margin-top: 10px;
     position: relative;
     overflow: hidden;
-  }
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
   
   .auth-form button::after {
     content: '';
@@ -182,13 +183,25 @@
   /* Responsive Adjustments */
   @media (max-width: 480px) {
     .auth-container {
-      margin: 20px;
-      padding: 30px;
+        margin: 20px;
+        padding: 30px;
+        width: calc(100% - 40px);
     }
     
     .auth-header h1 {
-      font-size: 1.75rem;
+        font-size: 1.75rem;
+        color: var(--text-primary);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     }
-  }
+
+    .auth-form button {
+        padding: 12px;
+        font-size: 0.95rem;
+    }
+
+    .auth-form button:active {
+        transform: scale(0.98);
+    }
+}
   
   

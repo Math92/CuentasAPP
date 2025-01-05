@@ -1,19 +1,15 @@
 /* styles/cards.css */
+
+/* Contenedor principal de la tarjeta */
 .record-card {
     background: var(--card-background);
     border-radius: var(--radius-lg);
     margin-bottom: 30px;
     border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-md);
     overflow: hidden;
-    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
 }
 
-.record-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
-}
-
+/* Cabecera de la tarjeta con el nombre del deudor */
 .card-header {
     background: var(--background-light);
     padding: 20px;
@@ -23,24 +19,178 @@
     align-items: center;
 }
 
+.card-header h3 {
+    font-size: 1.5rem;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+/* Total adeudado */
+.total-amount {
+    background: var(--secondary-color);
+    padding: 15px 20px;
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+    text-align: right;
+}
+
+/* Contenedor de préstamos */
+.loans-container {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+/* Cada préstamo individual */
 .loan-item {
     background: var(--background-light);
     border-radius: var(--radius-md);
-    margin-bottom: 20px;
     border: 1px solid var(--border-color);
+    overflow: hidden;
+    transition: transform 0.2s ease;
 }
 
-.payment-history {
+.loan-item:hover {
+    transform: translateY(-2px);
+}
+
+/* Cabecera del préstamo */
+.loan-header {
+    background: var(--secondary-color);
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.loan-title {
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    margin: 0;
+    flex-grow: 1;
+}
+
+.loan-metadata {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 0.9rem;
+}
+
+/* Detalles del préstamo */
+.loan-details {
     padding: 20px;
     background: var(--card-background);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.loan-amounts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.amount-box {
+    background: var(--background-light);
+    padding: 15px;
+    border-radius: var(--radius-sm);
+    text-align: center;
+}
+
+.amount-label {
+    display: block;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.amount-value {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--accent-color);
+}
+
+/* Formulario de pago */
+.payment-form {
+    background: var(--background-light);
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.payment-form h5 {
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+.payment-inputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    align-items: end;
+}
+
+/* Historial de pagos */
+.payment-history {
+    padding: 20px;
+}
+
+.payment-history h5 {
+    color: var(--text-primary);
+    margin-bottom: 15px;
+}
+
+.payments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .payment-item {
     background: var(--background-light);
     padding: 12px 15px;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--accent-color);
     display: grid;
     grid-template-columns: auto 1fr auto;
     gap: 15px;
     align-items: center;
+}
+
+/* Estados del préstamo */
+.loan-status {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.loan-status.active {
+    background: var(--success-color);
+    color: white;
+}
+
+.loan-status.completed {
+    background: var(--text-secondary);
+    color: white;
+}
+
+/* Sección de préstamos completados */
+.completed-loans-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.completed-loans-section h4 {
+    color: var(--text-secondary);
+    margin-bottom: 15px;
+    font-size: 1.1rem;
 }

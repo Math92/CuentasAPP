@@ -104,27 +104,43 @@ export function createRecordCard(record, isDebtor) {
     return card;
 }
 
+// Función para crear un ítem de préstamo
 export function createLoanItem(loan, recordId) {
     const loanItem = document.createElement('div');
     loanItem.className = `loan-item ${loan.status}`;
     loanItem.dataset.loanId = loan.id;
     
-    // Encabezado del préstamo
+    // Header del préstamo
     const header = document.createElement('div');
     header.className = 'loan-header';
     header.innerHTML = `
-        <h4>Préstamo: ${loan.description || 'Sin descripción'}</h4>
-        <span class="loan-date">Fecha: ${new Date(loan.startDate).toLocaleDateString()}</span>
+        <h4 class="loan-title">${loan.description || 'Sin descripción'}</h4>
+        <div class="loan-metadata">
+            <span class="loan-date">Fecha: ${new Date(loan.startDate).toLocaleDateString()}</span>
+            <span class="loan-status ${loan.status}">${loan.status === 'active' ? 'Activo' : 'Completado'}</span>
+        </div>
     `;
     
-    // Información de montos
-    const amounts = document.createElement('div');
-    amounts.className = 'loan-amounts';
-    amounts.innerHTML = `
-        <p>Monto Original: $${loan.amount.toFixed(2)}</p>
-        <p class="remaining-amount ${loan.status === 'completed' ? 'completed' : ''}">
-            Saldo Pendiente: $${loan.remainingAmount.toFixed(2)}
-        </p>
+    // Detalles del préstamo
+    const details = document.createElement('div');
+    details.className = 'loan-details';
+    details.innerHTML = `
+        <div class="loan-amounts">
+            <div class="amount-box">
+                <span class="amount-label">Monto Original:</span>
+                <span class="amount-value">${new Intl.NumberFormat('es-AR', {
+                    style: 'currency',
+                    currency: 'ARS'
+                }).format(loan.amount)}</span>
+            </div>
+            <div class="amount-box">
+                <span class="amount-label">Saldo Pendiente:</span>
+                <span class="amount-value">${new Intl.NumberFormat('es-AR', {
+                    style: 'currency',
+                    currency: 'ARS'
+                }).format(loan.remainingAmount)}</span>
+            </div>
+        </div>
     `;
     
     // Formulario de pago (solo para préstamos activos)
@@ -132,19 +148,19 @@ export function createLoanItem(loan, recordId) {
         const paymentForm = document.createElement('form');
         paymentForm.className = 'payment-form';
         paymentForm.innerHTML = `
-            <div class="form-group">
-                <label>Registrar Pago:</label>
+            <h5>Registrar Pago</h5>
+            <div class="payment-inputs">
                 <input type="number" step="0.01" placeholder="Monto" required>
                 <input type="date" required value="${new Date().toISOString().split('T')[0]}">
                 <input type="text" placeholder="Detalles del pago">
-                <button type="submit">Registrar</button>
+                <button type="submit">Registrar Pago</button>
             </div>
         `;
         
-        paymentForm.onsubmit = (e) => {
+        paymentForm.onsubmit = async (e) => {
             e.preventDefault();
             const [amount, date, details] = e.target.querySelectorAll('input');
-            registerPayment(recordId, loan.id, amount.value, date.value, details.value);
+            await registerPayment(recordId, loan.id, amount.value, date.value, details.value);
             e.target.reset();
         };
         
@@ -156,7 +172,7 @@ export function createLoanItem(loan, recordId) {
     history.className = 'payment-history';
     history.innerHTML = '<h5>Historial de Pagos</h5>';
     
-    if (loan.payments.length > 0) {
+    if (loan.payments && loan.payments.length > 0) {
         const paymentsList = document.createElement('div');
         paymentsList.className = 'payments-list';
         
@@ -167,8 +183,11 @@ export function createLoanItem(loan, recordId) {
                 paymentItem.className = 'payment-item';
                 paymentItem.innerHTML = `
                     <span class="payment-date">${new Date(payment.date).toLocaleDateString()}</span>
-                    <span class="payment-amount">$${payment.amount.toFixed(2)}</span>
-                    ${payment.details ? `<span class="payment-details">${payment.details}</span>` : ''}
+                    <span class="payment-details">${payment.details || ''}</span>
+                    <span class="payment-amount">${new Intl.NumberFormat('es-AR', {
+                        style: 'currency',
+                        currency: 'ARS'
+                    }).format(payment.amount)}</span>
                 `;
                 paymentsList.appendChild(paymentItem);
             });
@@ -179,7 +198,7 @@ export function createLoanItem(loan, recordId) {
     }
     
     loanItem.appendChild(header);
-    loanItem.appendChild(amounts);
+    loanItem.appendChild(details);
     loanItem.appendChild(history);
     
     return loanItem;

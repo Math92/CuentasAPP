@@ -1,104 +1,187 @@
-# CuentasAPP - Gestor de Finanzas Personales 💰
+# CuentasAPP - Personal Finance Management System 💰
 
-## Descripción
-CuentasAPP es una aplicación web para la gestión de finanzas personales que permite llevar un control detallado de deudas, créditos y gastos fijos. Desarrollada con JavaScript vanilla, HTML5 y CSS3, ofrece una interfaz intuitiva para el manejo de presupuestos personales.
+## Overview
+CuentasAPP is a full-stack web application for personal finance management, designed to track debts, credits, and fixed expenses. Built with vanilla JavaScript and Firebase Realtime Database, it provides a robust solution for budget tracking and financial planning.
 
-## Características Principales 🌟
+## Tech Stack 🛠️
 
-- **Vista General Mensual**
-  - Resumen de pagos a recibir y realizar
-  - Balance mensual estimado
-  - Visualización de gastos fijos pendientes
-  - Vista organizada por mes
+### Frontend
+- **JavaScript (ES6+)**
+  - Modular architecture using ES6 modules
+  - Class-based OOP implementation
+  - Async/Await for API handling
+- **HTML5**
+  - Semantic markup
+  - Form validation
+  - Template elements for dynamic content
+- **CSS3**
+  - Modular CSS architecture
+  - CSS Custom Properties (variables)
+  - Flexbox and Grid layouts
+  - Responsive design
+  - Dark theme implementation
 
-- **Gestión de Deudores**
-  - Registro de personas que deben dinero
-  - Control de pagos mensuales
-  - Seguimiento de saldos pendientes
-  - Historial de pagos realizados
+### Backend
+- **Firebase Realtime Database**
+  - NoSQL data structure
+  - Real-time data synchronization
+  - User authentication
+  - Data persistence
 
-- **Control de Acreedores**
-  - Registro de deudas propias
-  - Seguimiento de pagos mensuales
-  - Control de saldos pendientes
-  - Historial de pagos efectuados
-
-- **Administración de Gastos Fijos**
-  - Registro de gastos recurrentes
-  - Control de fechas de pago
-  - Historial de pagos por mes
-  - Actualización de montos
-
-## Tecnologías Utilizadas 🛠️
-
-- HTML5
-- CSS3 (con variables CSS para theming)
-- JavaScript (ES6+)
-- LocalStorage para persistencia de datos
-- Diseño Responsivo
-- Sistema de Grid y Flexbox
-
-## Estructura del Proyecto 📁
+## Project Structure 📁
 
 ```
 CuentasAPP/
-├── index.html          # Estructura principal de la aplicación
-├── styles.css         # Estilos y diseño visual
-└── app.js            # Lógica de la aplicación
+├── scripts/
+│   ├── auth.js           # Authentication logic
+│   ├── base.js           # Core classes (Loan, DebtRecord, FixedExpense)
+│   ├── cards.js          # UI components for records
+│   ├── events.js         # Event handlers and UI updates
+│   ├── firebase-service.js # Firebase integration
+│   ├── init.js           # Application initialization
+│   └── states.js         # State management
+├── styles/
+│   ├── auth.css          # Authentication styles
+│   ├── base.css          # Base styles
+│   ├── buttons.css       # Button components
+│   ├── cards.css         # Card components
+│   ├── forms.css         # Form styles
+│   ├── overview.css      # Dashboard styles
+│   ├── responsive.css    # Responsive design
+│   ├── tabs.css          # Navigation tabs
+│   └── variables.css     # CSS custom properties
+└── pages/
+    ├── index.html        # Main application
+    ├── login.html        # Login page
+    └── register.html     # Registration page
 ```
 
-### Componentes Principales del Código
+## Core Features 🌟
 
-#### JavaScript (app.js)
-- Clases principales:
-  - `DebtRecord`: Manejo de registros de deuda/crédito
-  - `FixedExpense`: Gestión de gastos fijos
-- Sistema de estado centralizado
-- Funciones de persistencia con LocalStorage
-- Manejo de UI y eventos
+### Authentication System
+- User registration and login
+- Session management
+- Secure route protection
+- Firebase authentication integration
 
-#### HTML (index.html)
-- Estructura modular por secciones
-- Sistema de pestañas para navegación
-- Formularios para ingreso de datos
-- Contenedores para visualización de información
+### Financial Management
+1. **Debtors Management**
+   - Track multiple loans per debtor
+   - Payment history tracking
+   - Real-time balance calculation
+   - Status tracking (active/completed)
 
-#### CSS (styles.css)
-- Sistema de variables para temas
-- Diseño responsivo
-- Estilos de tarjetas y formularios
-- Animaciones y transiciones
+2. **Creditors Management**
+   - Credit tracking
+   - Payment scheduling
+   - Balance monitoring
+   - Payment history
 
-## Características Técnicas 🔧
+3. **Fixed Expenses**
+   - Monthly expense tracking
+   - Payment date monitoring
+   - Status tracking (paid/pending)
+   - Historical data maintenance
 
-### Persistencia de Datos
-- Utiliza LocalStorage para guardar:
-  - Registros de deudores
-  - Registros de acreedores
-  - Gastos fijos
-  - Estado actual de la aplicación
+### Monthly Overview Dashboard
+- Comprehensive financial summary
+- Income vs. Expense analysis
+- Payment schedules
+- Monthly balance calculation
 
-### Funcionalidades Principales
-- Cálculo automático de balances
-- Sistema de recordatorios por fecha
-- Actualización en tiempo real
-- Validación de formularios
+## Data Models 📊
 
+### Loan Class
+```javascript
+class Loan {
+    constructor(amount, startDate, description) {
+        this.id = Date.now() + Math.random().toString(36).substr(2, 9);
+        this.amount = parseFloat(amount);
+        this.startDate = startDate;
+        this.description = description;
+        this.payments = [];
+        this.remainingAmount = this.amount;
+        this.status = 'active';
+    }
+}
+```
 
-## Guía de Uso 📖
+### DebtRecord Class
+```javascript
+class DebtRecord {
+    constructor(name, details = '') {
+        this.id = Date.now() + Math.random().toString(36).substr(2, 9);
+        this.name = name;
+        this.details = details;
+        this.loans = [];
+        this.totalOwed = 0;
+    }
+}
+```
 
-1. **Vista General**
-   - Selecciona el mes para ver el resumen
-   - Revisa los pagos pendientes y realizados
-   - Consulta el balance mensual
+### FixedExpense Class
+```javascript
+class FixedExpense {
+    constructor(name, amount, paymentDay, details) {
+        this.id = Date.now();
+        this.name = name;
+        this.amount = parseFloat(amount);
+        this.paymentDay = parseInt(paymentDay);
+        this.details = details;
+        this.history = [];
+        this.payments = {};
+    }
+}
+```
 
-2. **Gestión de Deudores/Acreedores**
-   - Agrega nuevos registros con el formulario
-   - Registra pagos en las tarjetas individuales
-   - Consulta historiales de pago
+## Firebase Integration 🔥
 
-3. **Gastos Fijos**
-   - Registra gastos recurrentes
-   - Marca pagos realizados
-   - Actualiza montos cuando sea necesario
+### Data Structure
+```
+/users
+  /{userId}
+    /debtors
+      /{debtorId}
+        - name
+        - details
+        - loans[]
+    /creditors
+      /{creditorId}
+        - name
+        - details
+        - loans[]
+    /fixedExpenses
+      /{expenseId}
+        - name
+        - amount
+        - paymentDay
+        - payments{}
+```
+
+### API Services
+- CRUD operations for debtors
+- CRUD operations for creditors
+- CRUD operations for fixed expenses
+- Payment tracking and updates
+
+## UI/UX Features 🎨
+
+### Responsive Design
+- Mobile-first approach
+- Fluid layouts
+- Adaptive components
+- Touch-friendly interfaces
+
+### Theme System
+- Dark theme implementation
+- CSS custom properties for theming
+- Consistent color palette
+- Accessible color contrasts
+
+### Interactive Components
+- Dynamic form validation
+- Real-time updates
+- Smooth transitions
+- Loading states
+- Error handling
 

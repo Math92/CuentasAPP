@@ -8,19 +8,22 @@
 </head>
 <body>
     <div class="container">
-        <!-- Agregar después de <div class="container"> -->
+        <!-- User Bar -->
         <div class="user-bar">
             <span id="user-email"></span>
-            <button onclick="logoutUser()" class="logout-btn">Cerrar Sesión</button>        </div>
+            <button onclick="logoutUser()" class="logout-btn">Cerrar Sesión</button>
+        </div>
+
+        <!-- Navigation Tabs -->
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('overview')">Vista General</button>
-            <button class="tab" onclick="switchTab('debtors')">Deudores</button>
-            <button class="tab" onclick="switchTab('creditors')">Acreedores</button>
-            <button class="tab" onclick="switchTab('fixed-expenses')">Gastos Fijos</button>
+            <button class="tab active" data-tab="overview" onclick="switchTab('overview')">Vista General</button>
+            <button class="tab" data-tab="debtors" onclick="switchTab('debtors')">Deudores</button>
+            <button class="tab" data-tab="creditors" onclick="switchTab('creditors')">Acreedores</button>
+            <button class="tab" data-tab="fixed-expenses" onclick="switchTab('fixed-expenses')">Gastos Fijos</button>
         </div>
 
         <!-- Sección de Vista General -->
-        <div id="overview-section" style="display: none;">
+        <div id="overview-section" class="section active">
             <div class="form-container">
                 <h2>Vista General Mensual</h2>
                 <div class="month-selector">
@@ -60,9 +63,9 @@
         </div>
 
         <!-- Sección de Deudores -->
-        <div id="debtors-section">
+        <div id="debtors-section" class="section">
             <div class="form-container">
-                <h2>Agregar Nuevo Deudor</h2>
+                <h2>Registrar Deudor</h2>
                 <form id="debtor-form">
                     <div class="form-group">
                         <label for="debtor-name">Nombre:</label>
@@ -73,25 +76,36 @@
                         <input type="number" id="debt-amount" step="0.01" required>
                     </div>
                     <div class="form-group">
-                        <label for="start-date">Fecha del Préstamo:</label>
+                        <label for="start-date">Fecha:</label>
                         <input type="date" id="start-date" required>
                     </div>
                     <div class="form-group">
-                        <label for="debtor-details">Detalles/Razón del préstamo:</label>
+                        <label for="debtor-details">Detalles/Razón:</label>
                         <textarea id="debtor-details" rows="3"></textarea>
                     </div>
-                    <button type="submit">Agregar Deudor</button>
+                    <div class="installments-section">
+                        <div class="installments-toggle">
+                            <input type="checkbox" id="installments-enabled" class="custom-checkbox">
+                            <label for="installments-enabled">Pago en cuotas</label>
+                        </div>
+                        <div id="installments-input" class="installments-group hidden">
+                            <label for="installments-count">Número de cuotas:</label>
+                            <input type="number" id="installments-count" min="1" value="1" class="form-control">
+                            <span class="monthly-amount">Cuota mensual: $0.00</span>
+                        </div>
+                    </div>
+                    <button type="submit" class="submit-btn">Guardar Deudor</button>
                 </form>
             </div>
-            <div id="debtors-list" class="records-container">
-                <!-- Aquí se mostrarán los deudores -->
+            <div id="debtors-list" class="records-list">
+                <!-- Los deudores se insertarán aquí dinámicamente -->
             </div>
         </div>
 
         <!-- Sección de Acreedores -->
-        <div id="creditors-section" style="display: none;">
+        <div id="creditors-section" class="section">
             <div class="form-container">
-                <h2>Agregar Nuevo Acreedor</h2>
+                <h2>Registrar Acreedor</h2>
                 <form id="creditor-form">
                     <div class="form-group">
                         <label for="creditor-name">Nombre:</label>
@@ -102,23 +116,34 @@
                         <input type="number" id="credit-amount" step="0.01" required>
                     </div>
                     <div class="form-group">
-                        <label for="credit-date">Fecha del Crédito:</label>
+                        <label for="credit-date">Fecha:</label>
                         <input type="date" id="credit-date" required>
                     </div>
                     <div class="form-group">
-                        <label for="creditor-details">Detalles/Razón del crédito:</label>
+                        <label for="creditor-details">Detalles/Razón:</label>
                         <textarea id="creditor-details" rows="3"></textarea>
                     </div>
-                    <button type="submit">Agregar Acreedor</button>
+                    <div class="installments-section">
+                        <div class="installments-toggle">
+                            <input type="checkbox" id="creditor-installments-enabled" class="custom-checkbox">
+                            <label for="creditor-installments-enabled">Pago en cuotas</label>
+                        </div>
+                        <div id="creditor-installments-input" class="installments-group hidden">
+                            <label for="creditor-installments-count">Número de cuotas:</label>
+                            <input type="number" id="creditor-installments-count" min="1" value="1" class="form-control">
+                            <span class="monthly-amount">Cuota mensual: $0.00</span>
+                        </div>
+                    </div>
+                    <button type="submit" class="submit-btn">Guardar Acreedor</button>
                 </form>
             </div>
-            <div id="creditors-list" class="records-container">
-                <!-- Aquí se mostrarán los acreedores -->
+            <div id="creditors-list" class="records-list">
+                <!-- Los acreedores se insertarán aquí dinámicamente -->
             </div>
         </div>
 
         <!-- Sección de Gastos Fijos -->
-        <div id="fixed-expenses-section" style="display: none;">
+        <div id="fixed-expenses-section" class="section">
             <div class="form-container">
                 <h2>Gestionar Gastos Fijos</h2>
                 <form id="fixed-expense-form">
@@ -141,8 +166,8 @@
                     <button type="submit">Agregar Gasto Fijo</button>
                 </form>
             </div>
-            <div id="fixed-expenses-list" class="records-container">
-                <!-- Aquí se mostrarán los gastos fijos -->
+            <div id="fixed-expenses-list" class="records-list">
+                <!-- Los gastos fijos se insertarán aquí -->
             </div>
         </div>
     </div>
@@ -177,6 +202,8 @@
             </div>
         </div>
     </template>
+
+    <!-- Scripts -->
     <script type="module" src="scripts/init.js"></script>
     <script type="module" src="scripts/firebase-service.js"></script>
     <script type="module">
@@ -185,6 +212,17 @@
             authService.logout();
         }
     </script>
-    
+    <script>
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(`${tabName}-section`).classList.add('active');
+        }
+    </script>
 </body>
 </html>

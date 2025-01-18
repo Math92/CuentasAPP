@@ -1,0 +1,20 @@
+{
+    "name": "CuentasAPP",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+        "test": "jest"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "@babel/core": "^7.26.0",
+        "@babel/preset-env": "^7.26.0",
+        "@faker-js/faker": "^7.6.0",
+        "babel-jest": "^29.7.0",
+        "jest": "^29.7.0"
+    }
+}

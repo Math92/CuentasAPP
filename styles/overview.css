@@ -457,3 +457,14 @@
         background-color: var(--success-color);
     }
 }
+
+/* Agrega esto al final de overview.css */
+
+/* Estilos para las cuotas mensuales en la Vista General */
+.monthly-amount {
+    background-color: #1a2532;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-weight: 500;
+    color: #64b5f6;
+}

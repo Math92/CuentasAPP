@@ -10,7 +10,7 @@ const formatCurrency = (amount) => {
     }).format(amount);
 };
 
-// Función para registrar pagos
+// Función unificada para registrar pagos
 async function registerPayment(recordId, loanId, amount, date, details) {
     try {
         const record = [...state.debtors, ...state.creditors]
@@ -28,175 +28,30 @@ async function registerPayment(recordId, loanId, amount, date, details) {
     }
 }
 
-// Función para crear una tarjeta de registro de deuda/crédito
-export function createRecordCard(record, isDebtor) {
-    const card = document.createElement('div');
-    card.className = 'record-card';
-    card.dataset.recordId = record.id;
-    
-    const header = document.createElement('div');
-    header.className = 'card-header';
-    
-    const title = document.createElement('h3');
-    title.textContent = record.name;
-    
-    const deleteButton = createDeleteButton(record, isDebtor ? 'deudor' : 'acreedor');
-    
-    header.appendChild(title);
-    header.appendChild(deleteButton);
-    card.appendChild(header);
-
-    // Mostrar total adeudado
-    const totalAmount = document.createElement('p');
-    totalAmount.className = 'total-amount';
-    totalAmount.textContent = `Total Pendiente: ${formatCurrency(record.totalOwed)}`;
-    card.appendChild(totalAmount);
-    
-    // Contenedor para préstamos
-    const loansContainer = document.createElement('div');
-    loansContainer.className = 'loans-container';
-    
-    // Mostrar préstamos activos
-    record.getActiveLoans().forEach(loan => {
-        const loanItem = createLoanItem(loan, record.id);
-        loansContainer.appendChild(loanItem);
-    });
-
-    // Mostrar préstamos completados
-    const completedLoans = record.getCompletedLoans();
-    if (completedLoans.length > 0) {
-        const completedSection = document.createElement('div');
-        completedSection.className = 'completed-loans-section';
-        completedSection.innerHTML = '<h4>Préstamos Completados</h4>';
-        
-        completedLoans.forEach(loan => {
-            const loanItem = createLoanItem(loan, record.id);
-            completedSection.appendChild(loanItem);
-        });
-        
-        loansContainer.appendChild(completedSection);
-    }
-
-    card.appendChild(loansContainer);
-
-
-// Formulario para nuevo préstamo
-const newLoanSection = document.createElement('div');
-newLoanSection.className = 'new-loan-section hidden';
-newLoanSection.innerHTML = `
-    <form class="add-loan-form">
-        <h4>Agregar Nuevo Préstamo</h4>
-        <div class="form-group">
-            <label>Monto del Préstamo:</label>
-            <input type="number" step="0.01" class="amount-input" required>
-        </div>
-        <div class="form-group">
-            <label>Fecha:</label>
-            <input type="date" class="date-input" required value="${new Date().toISOString().split('T')[0]}">
-        </div>
-        <div class="form-group">
-            <label>Descripción/Razón:</label>
-            <input type="text" class="description-input" required>
-        </div>
-        <div class="form-actions">
-            <button type="submit" class="submit-btn">Guardar Préstamo</button>
-            <button type="button" class="cancel-btn">Cancelar</button>
-        </div>
-    </form>
-`;
-card.appendChild(newLoanSection);
-
-// Botón para mostrar formulario
-const addLoanButton = document.createElement('button');
-addLoanButton.className = 'add-loan-button';
-addLoanButton.textContent = `Agregar Nuevo ${isDebtor ? 'Préstamo' : 'Crédito'}`;
-addLoanButton.onclick = () => {
-    newLoanSection.classList.remove('hidden');
-    addLoanButton.classList.add('hidden');
-};
-card.appendChild(addLoanButton);
-
-// Manejar el formulario de nuevo préstamo
-const addLoanForm = newLoanSection.querySelector('.add-loan-form');
-const cancelButton = newLoanSection.querySelector('.cancel-btn');
-
-addLoanForm.onsubmit = async (e) => {
-    e.preventDefault();
-    try {
-        const amount = e.target.querySelector('.amount-input').value;
-        const date = e.target.querySelector('.date-input').value;
-        const description = e.target.querySelector('.description-input').value;
-        
-        if (record) {
-            record.addLoan(amount, date, description);
-            await saveState();
-            updateUI();
-        }
-        
-        newLoanSection.classList.add('hidden');
-        addLoanButton.classList.remove('hidden');
-        e.target.reset();
-    } catch (error) {
-        alert('Error al crear el préstamo: ' + error.message);
-    }
-};
-
-cancelButton.onclick = () => {
-    newLoanSection.classList.add('hidden');
-    addLoanButton.classList.remove('hidden');
-    addLoanForm.reset();
-};
-
-return card;
-}
-
-// Función para crear un ítem de préstamo
-export function createLoanItem(loan, recordId) {
-const loanItem = document.createElement('div');
-loanItem.className = `loan-item ${loan.status}`;
-loanItem.dataset.loanId = loan.id;
-
-// Header del préstamo
-const header = document.createElement('div');
-header.className = 'loan-header';
-header.innerHTML = `
-    <h4 class="loan-title">${loan.description || 'Sin descripción'}</h4>
-    <div class="loan-metadata">
-        <span class="loan-date">Fecha: ${new Date(loan.startDate).toLocaleDateString()}</span>
-        <span class="loan-status ${loan.status}">${loan.status === 'active' ? 'Activo' : 'Completado'}</span>
-    </div>
-`;
-
-// Detalles del préstamo
-const details = document.createElement('div');
-details.className = 'loan-details';
-details.innerHTML = `
-    <div class="loan-amounts">
-        <div class="amount-box">
-            <span class="amount-label">Monto Original:</span>
-            <span class="amount-value">${formatCurrency(loan.amount)}</span>
-        </div>
-        <div class="amount-box">
-            <span class="amount-label">Saldo Pendiente:</span>
-            <span class="amount-value ${loan.status === 'completed' ? 'completed' : ''}">${formatCurrency(loan.remainingAmount)}</span>
-        </div>
-        <div class="amount-box">
-            <span class="amount-label">Total Pagado:</span>
-            <span class="amount-value">${formatCurrency(loan.getTotalPaid())}</span>
-        </div>
-    </div>
-`;
-
-// Formulario de pago (solo para préstamos activos)
-if (loan.status === 'active') {
+// Formulario unificado de pagos
+function createPaymentForm(loan, recordId) {
     const paymentForm = document.createElement('form');
     paymentForm.className = 'payment-form';
+    
+    // Determinar el monto según el tipo de préstamo
+    const maxAmount = loan.type === 'auto' ? parseFloat(loan.monthlyAmount) : loan.remainingAmount;
+    const defaultAmount = loan.type === 'auto' ? parseFloat(loan.monthlyAmount) : '';
+    
     paymentForm.innerHTML = `
         <h5>Registrar Pago</h5>
         <div class="payment-inputs">
             <div class="form-group">
-                <label>Monto (Máx: ${formatCurrency(loan.remainingAmount)})</label>
-                <input type="number" step="0.01" max="${loan.remainingAmount}" required>
+                <label>
+                    Monto ${loan.type === 'auto' 
+                        ? `(Cuota fija: ${formatCurrency(parseFloat(loan.monthlyAmount))})` 
+                        : `(Máx: ${formatCurrency(loan.remainingAmount)})`}
+                </label>
+                <input type="number" 
+                    step="0.01" 
+                    max="${maxAmount}" 
+                    value="${defaultAmount}"
+                    ${loan.type === 'auto' ? 'readonly' : ''}
+                    required>
             </div>
             <div class="form-group">
                 <label>Fecha</label>
@@ -206,7 +61,7 @@ if (loan.status === 'active') {
                 <label>Detalles del pago</label>
                 <input type="text" placeholder="Detalles opcionales">
             </div>
-            <button type="submit">Registrar Pago</button>
+            <button type="submit" class="submit-btn">Registrar Pago</button>
         </div>
     `;
     
@@ -216,61 +71,247 @@ if (loan.status === 'active') {
             const [amountInput, dateInput, detailsInput] = e.target.querySelectorAll('input');
             const amount = parseFloat(amountInput.value);
             
-            if (amount <= 0) {
-                throw new Error('El monto debe ser mayor a 0');
-            }
-            if (amount > loan.remainingAmount) {
-                throw new Error(`El pago excede el monto restante. Máximo a pagar: ${formatCurrency(loan.remainingAmount)}`);
+            // Validaciones por tipo de préstamo
+            if (loan.type === 'auto') {
+                if (amount !== parseFloat(loan.monthlyAmount)) {
+                    throw new Error(`El pago debe ser igual al monto de la cuota: ${formatCurrency(parseFloat(loan.monthlyAmount))}`);
+                }
+            } else {
+                if (amount <= 0) {
+                    throw new Error('El monto debe ser mayor a 0');
+                }
+                if (amount > loan.remainingAmount) {
+                    throw new Error(`El pago excede el monto restante. Máximo a pagar: ${formatCurrency(loan.remainingAmount)}`);
+                }
             }
 
             await registerPayment(recordId, loan.id, amount, dateInput.value, detailsInput.value);
             e.target.reset();
+            if (loan.type === 'auto') {
+                amountInput.value = loan.monthlyAmount;
+            }
         } catch (error) {
             alert(error.message);
         }
     };
     
-    loanItem.appendChild(paymentForm);
+    return paymentForm;
 }
 
-// Historial de pagos
-const history = document.createElement('div');
-history.className = 'payment-history';
-history.innerHTML = '<h5>Historial de Pagos</h5>';
-
-if (loan.payments && loan.payments.length > 0) {
-    const paymentsList = document.createElement('div');
-    paymentsList.className = 'payments-list';
+// Función para crear formulario de nuevo préstamo
+function createAddLoanForm(recordId, isDebtor) {
+    const formContainer = document.createElement('div');
+    formContainer.className = 'add-loan-form hidden';
     
-    loan.payments
-        .sort((a, b) => new Date(b.date) - new Date(a.date))
-        .forEach(payment => {
-            const paymentItem = document.createElement('div');
-            paymentItem.className = 'payment-item';
-            paymentItem.innerHTML = `
-                <span class="payment-date">${new Date(payment.date).toLocaleDateString()}</span>
-                <span class="payment-details">${payment.details || 'Sin detalles'}</span>
-                <span class="payment-amount">${formatCurrency(payment.amount)}</span>
+    formContainer.innerHTML = `
+        <div class="form-overlay">
+            <div class="loan-form-container">
+                <h3>Agregar Nuevo ${isDebtor ? 'Préstamo' : 'Crédito'}</h3>
+                <form>
+                    <div class="form-group">
+                        <label>Monto:</label>
+                        <input type="number" class="amount-input" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha:</label>
+                        <input type="date" class="date-input" 
+                            value="${new Date().toISOString().split('T')[0]}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Descripción/Razón:</label>
+                        <textarea class="description-input" rows="3"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="save-btn">Guardar</button>
+                        <button type="button" class="cancel-btn">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+
+    const form = formContainer.querySelector('form');
+    const cancelBtn = formContainer.querySelector('.cancel-btn');
+
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const amount = e.target.querySelector('.amount-input').value;
+            const date = e.target.querySelector('.date-input').value;
+            const description = e.target.querySelector('.description-input').value;
+
+            const record = [...state.debtors, ...state.creditors]
+                .find(r => r.id === recordId);
+
+            if (record) {
+                await record.addLoan(amount, date, description);
+                await saveState();
+                formContainer.classList.add('hidden');
+                await updateUI();
+            }
+        } catch (error) {
+            alert('Error al crear el préstamo: ' + error.message);
+        }
+    };
+
+    cancelBtn.onclick = () => formContainer.classList.add('hidden');
+
+    return formContainer;
+}
+
+// Función principal para crear tarjeta de registro
+function createRecordCard(record, isDebtor) {
+    const card = document.createElement('div');
+    card.className = `record-card ${isDebtor ? 'debtor-item' : 'creditor-item'}`;
+    card.dataset.recordId = record.id;
+    
+    // Header
+    const header = document.createElement('div');
+    header.className = 'record-header';
+    header.innerHTML = `
+        <h3>${record.name}</h3>
+        ${createDeleteButton(record, isDebtor ? 'deudor' : 'acreedor').outerHTML}
+    `;
+    card.appendChild(header);
+
+    // Total pendiente
+    const totalAmount = document.createElement('div');
+    totalAmount.className = 'total-pending';
+    totalAmount.textContent = `Total Pendiente: ${formatCurrency(record.totalOwed)}`;
+    card.appendChild(totalAmount);
+
+    // Préstamos activos
+    const activeLoans = record.getActiveLoans();
+    if (activeLoans.length > 0) {
+        const activeLoansList = document.createElement('div');
+        activeLoansList.className = 'loans-list active-loans';
+
+        activeLoans.forEach(loan => {
+            const loanItem = document.createElement('div');
+            loanItem.className = 'loan-item';
+            loanItem.innerHTML = `
+                <div class="loan-header">
+                    <div class="loan-title">
+                        <h4>${loan.description || 'Sin descripción'}</h4>
+                        <span class="loan-date">Fecha: ${new Date(loan.startDate).toLocaleDateString()}</span>
+                    </div>
+                    <span class="status-badge active">ACTIVO</span>
+                </div>
+                
+                <div class="loan-amounts">
+                    <div class="amount-box">
+                        <span class="label">Monto Original</span>
+                        <span class="value">${formatCurrency(loan.amount)}</span>
+                    </div>
+                    <div class="amount-box">
+                        <span class="label">Saldo Pendiente</span>
+                        <span class="value">${formatCurrency(loan.remainingAmount)}</span>
+                    </div>
+                    <div class="amount-box">
+                        <span class="label">Total Pagado</span>
+                        <span class="value">${formatCurrency(loan.getTotalPaid())}</span>
+                    </div>
+                </div>
             `;
-            paymentsList.appendChild(paymentItem);
+
+            // Agregar formulario de pago
+            if (loan.status === 'active') {
+                loanItem.appendChild(createPaymentForm(loan, record.id));
+            }
+
+            activeLoansList.appendChild(loanItem);
         });
-    
-    history.appendChild(paymentsList);
-} else {
-    history.innerHTML += '<p class="no-payments">No hay pagos registrados</p>';
+
+        card.appendChild(activeLoansList);
+    }
+
+    // Préstamos completados
+    const completedLoans = record.getCompletedLoans();
+    if (completedLoans.length > 0) {
+        const completedSection = document.createElement('div');
+        completedSection.className = 'completed-loans-section';
+        completedSection.innerHTML = '<h4>Préstamos Completados</h4>';
+
+        completedLoans.forEach(loan => {
+            completedSection.appendChild(createCompletedLoanItem(loan));
+        });
+
+        card.appendChild(completedSection);
+    }
+
+    // Agregar nuevo préstamo
+    const addLoanForm = createAddLoanForm(record.id, isDebtor);
+    card.appendChild(addLoanForm);
+
+    const addButton = document.createElement('button');
+    addButton.className = 'add-loan-button';
+    addButton.textContent = `Agregar Nuevo ${isDebtor ? 'Préstamo' : 'Crédito'}`;
+    addButton.onclick = () => addLoanForm.classList.remove('hidden');
+    card.appendChild(addButton);
+
+    return card;
 }
 
-loanItem.appendChild(header);
-loanItem.appendChild(details);
-loanItem.appendChild(history);
-
-return loanItem;
+// Función auxiliar para crear item de préstamo completado
+function createCompletedLoanItem(loan) {
+    const item = document.createElement('div');
+    item.className = 'loan-item completed';
+    item.innerHTML = `
+        <div class="loan-header">
+            <div class="loan-title">
+                <h4>${loan.description || 'Sin descripción'}</h4>
+                <span class="loan-date">Fecha: ${new Date(loan.startDate).toLocaleDateString()}</span>
+            </div>
+            <span class="status-badge completed">COMPLETADO</span>
+        </div>
+        <div class="loan-amounts">
+            <div class="amount-box">
+                <span class="label">Monto Original</span>
+                <span class="value">${formatCurrency(loan.amount)}</span>
+            </div>
+            <div class="amount-box">
+                <span class="label">Total Pagado</span>
+                <span class="value">${formatCurrency(loan.getTotalPaid())}</span>
+            </div>
+        </div>
+    `;
+    return item;
 }
 
-export function createFixedExpenseCard(expense) {
+// Función auxiliar para crear botón de eliminación
+function createDeleteButton(record, type) {
+    const button = document.createElement('button');
+    button.className = 'delete-btn';
+    button.innerHTML = '🗑️ Eliminar';
+    button.onclick = async () => {
+        if (confirm(`¿Estás seguro de eliminar este registro de ${type}?`)) {
+            try {
+                switch (type) {
+                    case 'deudor':
+                        await firebaseService.deleteDebtor(record.id);
+                        state.debtors = state.debtors.filter(d => d.id !== record.id);
+                        break;
+                    case 'acreedor':
+                        await firebaseService.deleteCreditor(record.id);
+                        state.creditors = state.creditors.filter(c => c.id !== record.id);
+                        break;
+                }
+                updateUI();
+            } catch (error) {
+                console.error('Error al eliminar:', error);
+                alert('Error al eliminar el registro');
+            }
+        }
+    };
+    return button;
+}
+
+// Función para crear tarjeta de gasto fijo
+function createFixedExpenseCard(expense) {
     const card = document.createElement('div');
     card.className = 'record-card';
     
+    // Header
     const header = document.createElement('div');
     header.className = 'card-header';
     
@@ -315,16 +356,6 @@ export function createFixedExpenseCard(expense) {
     };
     
     // Historial de pagos
-    const historySection = createExpenseHistory(expense);
-    
-    card.appendChild(header);
-    card.appendChild(paymentSection);
-    card.appendChild(historySection);
-    
-    return card;
-}
-
-function createExpenseHistory(expense) {
     const historySection = document.createElement('div');
     historySection.className = 'payment-history';
     historySection.innerHTML = '<h4>Historial de Pagos</h4>';
@@ -355,36 +386,11 @@ function createExpenseHistory(expense) {
         }
     });
     
-    return historySection;
+    card.appendChild(paymentSection);
+    card.appendChild(historySection);
+    
+    return card;
 }
 
-function createDeleteButton(record, type) {
-    const deleteButton = document.createElement('button');
-    deleteButton.className = 'delete-btn';
-    deleteButton.innerHTML = '🗑️ Eliminar';
-    deleteButton.onclick = async () => {
-        if (confirm(`¿Estás seguro de eliminar este registro de ${type}?`)) {
-            try {
-                switch (type) {
-                    case 'deudor':
-                        await firebaseService.deleteDebtor(record.id);
-                        state.debtors = state.debtors.filter(d => d.id !== record.id);
-                        break;
-                    case 'acreedor':
-                        await firebaseService.deleteCreditor(record.id);
-                        state.creditors = state.creditors.filter(c => c.id !== record.id);
-                        break;
-                    case 'gasto fijo':
-                        await firebaseService.deleteFixedExpense(record.id);
-                        state.fixedExpenses = state.fixedExpenses.filter(e => e.id !== record.id);
-                        break;
-                }
-                updateUI();
-            } catch (error) {
-                console.error('Error al eliminar:', error);
-                alert('Error al eliminar el registro');
-            }
-        }
-    };
-    return deleteButton;
-}
+// Y modificamos la exportación al final del archivo:
+export { createRecordCard, createFixedExpenseCard };

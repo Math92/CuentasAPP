@@ -1,3 +1,4 @@
+// cards.js - Parte 1
 import { state, saveState, getNext12Months, isMonthCurrentOrFuture } from './states.js';
 import { updateUI } from './events.js';
 import { firebaseService } from './firebase-service.js';
@@ -159,150 +160,224 @@ function createAddLoanForm(recordId, isDebtor) {
     return formContainer;
 }
 
-// Función principal para crear tarjeta de registro
-function createRecordCard(record, isDebtor) {
-    const card = document.createElement('div');
-    card.className = `record-card ${isDebtor ? 'debtor-item' : 'creditor-item'}`;
-    card.dataset.recordId = record.id;
+// Función para crear item de préstamo
+function createLoanItem(loan, recordId, isActive) {
+    const loanItem = document.createElement('div');
+    loanItem.className = `loan-item ${isActive ? 'active' : 'completed'}`;
     
-    // Header
-    const header = document.createElement('div');
-    header.className = 'record-header';
-    header.innerHTML = `
-        <h3>${record.name}</h3>
-        ${createDeleteButton(record, isDebtor ? 'deudor' : 'acreedor').outerHTML}
-    `;
-    card.appendChild(header);
-
-    // Total pendiente
-    const totalAmount = document.createElement('div');
-    totalAmount.className = 'total-pending';
-    totalAmount.textContent = `Total Pendiente: ${formatCurrency(record.totalOwed)}`;
-    card.appendChild(totalAmount);
-
-    // Préstamos activos
-    const activeLoans = record.getActiveLoans();
-    if (activeLoans.length > 0) {
-        const activeLoansList = document.createElement('div');
-        activeLoansList.className = 'loans-list active-loans';
-
-        activeLoans.forEach(loan => {
-            const loanItem = document.createElement('div');
-            loanItem.className = 'loan-item';
-            loanItem.innerHTML = `
-                <div class="loan-header">
-                    <div class="loan-title">
-                        <h4>${loan.description || 'Sin descripción'}</h4>
-                        <span class="loan-date">Fecha: ${new Date(loan.startDate).toLocaleDateString()}</span>
-                    </div>
-                    <span class="status-badge active">ACTIVO</span>
-                </div>
-                
-                <div class="loan-amounts">
-                    <div class="amount-box">
-                        <span class="label">Monto Original</span>
-                        <span class="value">${formatCurrency(loan.amount)}</span>
-                    </div>
-                    <div class="amount-box">
-                        <span class="label">Saldo Pendiente</span>
-                        <span class="value">${formatCurrency(loan.remainingAmount)}</span>
-                    </div>
-                    <div class="amount-box">
-                        <span class="label">Total Pagado</span>
-                        <span class="value">${formatCurrency(loan.getTotalPaid())}</span>
-                    </div>
-                </div>
-            `;
-
-            // Agregar formulario de pago
-            if (loan.status === 'active') {
-                loanItem.appendChild(createPaymentForm(loan, record.id));
-            }
-
-            activeLoansList.appendChild(loanItem);
-        });
-
-        card.appendChild(activeLoansList);
-    }
-
-    // Préstamos completados
-    const completedLoans = record.getCompletedLoans();
-    if (completedLoans.length > 0) {
-        const completedSection = document.createElement('div');
-        completedSection.className = 'completed-loans-section';
-        completedSection.innerHTML = '<h4>Préstamos Completados</h4>';
-
-        completedLoans.forEach(loan => {
-            completedSection.appendChild(createCompletedLoanItem(loan));
-        });
-
-        card.appendChild(completedSection);
-    }
-
-    // Agregar nuevo préstamo
-    const addLoanForm = createAddLoanForm(record.id, isDebtor);
-    card.appendChild(addLoanForm);
-
-    const addButton = document.createElement('button');
-    addButton.className = 'add-loan-button';
-    addButton.textContent = `Agregar Nuevo ${isDebtor ? 'Préstamo' : 'Crédito'}`;
-    addButton.onclick = () => addLoanForm.classList.remove('hidden');
-    card.appendChild(addButton);
-
-    return card;
-}
-
-// Función auxiliar para crear item de préstamo completado
-function createCompletedLoanItem(loan) {
-    const item = document.createElement('div');
-    item.className = 'loan-item completed';
-    item.innerHTML = `
-        <div class="loan-header">
+    const headerClass = isActive ? 'loan-header active' : 'loan-header completed';
+    
+    loanItem.innerHTML = `
+        <div class="${headerClass}">
             <div class="loan-title">
                 <h4>${loan.description || 'Sin descripción'}</h4>
                 <span class="loan-date">Fecha: ${new Date(loan.startDate).toLocaleDateString()}</span>
             </div>
-            <span class="status-badge completed">COMPLETADO</span>
+            <span class="status-badge ${isActive ? 'active' : 'completed'}">
+                ${isActive ? 'ACTIVO' : 'COMPLETADO'}
+            </span>
         </div>
+        
         <div class="loan-amounts">
             <div class="amount-box">
                 <span class="label">Monto Original</span>
                 <span class="value">${formatCurrency(loan.amount)}</span>
             </div>
+            ${isActive ? `
+                <div class="amount-box">
+                    <span class="label">Saldo Pendiente</span>
+                    <span class="value">${formatCurrency(loan.remainingAmount)}</span>
+                </div>
+            ` : ''}
             <div class="amount-box">
                 <span class="label">Total Pagado</span>
                 <span class="value">${formatCurrency(loan.getTotalPaid())}</span>
             </div>
         </div>
     `;
-    return item;
+
+    // Solo agregar formulario de pago si el préstamo está activo
+    if (isActive) {
+        loanItem.appendChild(createPaymentForm(loan, recordId));
+    }
+
+    return loanItem;
 }
 
-// Función auxiliar para crear botón de eliminación
+// Función principal para crear tarjeta de registro
+// Función createRecordCard actualizada
+function createRecordCard(record, isDebtor) {
+    // Contenedor principal
+    const card = document.createElement('div');
+    card.className = `record-card ${isDebtor ? 'debtor-item' : 'creditor-item'}`;
+    card.dataset.recordId = record.id;
+    
+    // Header con nombre y botón de eliminar
+    const header = document.createElement('div');
+    header.className = 'record-header';
+    header.innerHTML = `
+        <h3>${record.name}</h3>
+        <button class="delete-btn" data-record-id="${record.id}" data-type="${isDebtor ? 'deudor' : 'acreedor'}">
+            🗑️ Eliminar
+        </button>
+    `;
+
+    // Total pendiente
+    const totalAmount = document.createElement('div');
+    totalAmount.className = 'total-pending';
+    totalAmount.textContent = `Total Pendiente: ${formatCurrency(record.totalOwed)}`;
+
+    // Contenedor principal de préstamos
+    const loansContainer = document.createElement('div');
+    loansContainer.className = 'loans-container';
+
+    // Sección de préstamos activos
+    const activeLoans = record.getActiveLoans();
+    if (activeLoans.length > 0) {
+        const activeLoansList = document.createElement('div');
+        activeLoansList.className = 'loans-list active-loans';
+        activeLoansList.innerHTML = '<h4>Préstamos Activos</h4>';
+
+        activeLoans
+            .sort((a, b) => new Date(b.startDate) - new Date(a.startDate))
+            .forEach(loan => {
+                activeLoansList.appendChild(createLoanItem(loan, record.id, true));
+            });
+
+        loansContainer.appendChild(activeLoansList);
+    }
+
+    // Sección de préstamos completados
+    const completedLoans = record.getCompletedLoans();
+    if (completedLoans.length > 0) {
+        const completedLoansList = document.createElement('div');
+        completedLoansList.className = 'completed-loans-section';
+        completedLoansList.innerHTML = '<h4>Préstamos Completados</h4>';
+
+        completedLoans
+            .sort((a, b) => new Date(b.startDate) - new Date(a.startDate))
+            .forEach(loan => {
+                completedLoansList.appendChild(createLoanItem(loan, record.id, false));
+            });
+
+        loansContainer.appendChild(completedLoansList);
+    }
+
+    // Agregar todo al card
+    card.appendChild(header);
+    card.appendChild(totalAmount);
+    card.appendChild(loansContainer);
+
+    // Botón y formulario para agregar nuevo préstamo
+    const addLoanForm = createAddLoanForm(record.id, isDebtor);
+    const addButton = document.createElement('button');
+    addButton.className = 'add-loan-button';
+    addButton.textContent = `Agregar Nuevo ${isDebtor ? 'Préstamo' : 'Crédito'}`;
+    addButton.onclick = () => addLoanForm.classList.remove('hidden');
+
+    card.appendChild(addLoanForm);
+    card.appendChild(addButton);
+
+    // Agregar manejador de eventos para el botón eliminar
+    const deleteBtn = header.querySelector('.delete-btn');
+    deleteBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        try {
+            const recordId = e.target.dataset.recordId;
+            const type = e.target.dataset.type;
+            
+            if (!confirm(`¿Estás seguro de eliminar este registro de ${type}?`)) {
+                return;
+            }
+
+            const activeLoansCount = record.getActiveLoans().length;
+            if (activeLoansCount > 0) {
+                if (!confirm(`Este registro tiene ${activeLoansCount} préstamo(s) activo(s). ¿Realmente desea eliminarlo?`)) {
+                    return;
+                }
+            }
+
+            // Eliminar de Firebase primero
+            if (type === 'deudor') {
+                await firebaseService.deleteDebtor(recordId);
+                state.debtors = state.debtors.filter(d => d.id !== recordId);
+            } else {
+                await firebaseService.deleteCreditor(recordId);
+                state.creditors = state.creditors.filter(c => c.id !== recordId);
+            }
+
+            // Guardar el estado actualizado y refrescar la UI
+            await saveState();
+            await updateUI();
+            
+            alert('Registro eliminado correctamente');
+        } catch (error) {
+            console.error('Error al eliminar:', error);
+            alert(`Error al eliminar el registro: ${error.message}`);
+        }
+    });
+
+    return card;
+}
+
+// Función mejorada para crear el botón de eliminar
 function createDeleteButton(record, type) {
     const button = document.createElement('button');
     button.className = 'delete-btn';
     button.innerHTML = '🗑️ Eliminar';
-    button.onclick = async () => {
-        if (confirm(`¿Estás seguro de eliminar este registro de ${type}?`)) {
-            try {
-                switch (type) {
-                    case 'deudor':
-                        await firebaseService.deleteDebtor(record.id);
-                        state.debtors = state.debtors.filter(d => d.id !== record.id);
-                        break;
-                    case 'acreedor':
-                        await firebaseService.deleteCreditor(record.id);
-                        state.creditors = state.creditors.filter(c => c.id !== record.id);
-                        break;
-                }
-                updateUI();
-            } catch (error) {
-                console.error('Error al eliminar:', error);
-                alert('Error al eliminar el registro');
+    
+    button.addEventListener('click', async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        try {
+            // Primera confirmación
+            if (!confirm(`¿Estás seguro de eliminar este registro de ${type}?`)) {
+                return;
             }
+
+            // Si hay préstamos activos, pedir confirmación adicional
+            const activeLoans = record.getActiveLoans?.() || [];
+            if (activeLoans.length > 0) {
+                if (!confirm(`Este registro tiene ${activeLoans.length} préstamo(s) activo(s). ¿Realmente desea eliminarlo?`)) {
+                    return;
+                }
+            }
+
+            // Intentar eliminar primero de Firebase
+            switch (type) {
+                case 'deudor':
+                    await firebaseService.deleteDebtor(record.id);
+                    state.debtors = state.debtors.filter(d => d.id !== record.id);
+                    break;
+                    
+                case 'acreedor':
+                    await firebaseService.deleteCreditor(record.id);
+                    state.creditors = state.creditors.filter(c => c.id !== record.id);
+                    break;
+                    
+                case 'gasto fijo':
+                    await firebaseService.deleteFixedExpense(record.id);
+                    state.fixedExpenses = state.fixedExpenses.filter(e => e.id !== record.id);
+                    break;
+                    
+                default:
+                    throw new Error('Tipo de registro no válido');
+            }
+
+            // Si la eliminación en Firebase fue exitosa, actualizar el estado y la UI
+            await saveState();
+            await updateUI();
+            alert('Registro eliminado correctamente');
+
+        } catch (error) {
+            console.error('Error al eliminar:', error);
+            alert(`Error al eliminar el registro: ${error.message}`);
         }
-    };
+    });
+
     return button;
 }
 
@@ -392,5 +467,5 @@ function createFixedExpenseCard(expense) {
     return card;
 }
 
-// Y modificamos la exportación al final del archivo:
+// Exportación de las funciones necesarias
 export { createRecordCard, createFixedExpenseCard };

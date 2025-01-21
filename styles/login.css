@@ -1,0 +1,234 @@
+/* ==========================================================================
+   Login Page Variables
+   ========================================================================== */
+   :root {
+    /* Colors */
+    --primary-color: #2c3e50;
+    --secondary-color: #34495e;
+    --accent-color: #3498db;
+    --accent-hover: #2980b9;
+    --text-primary: #ecf0f1;
+    --text-secondary: #bdc3c7;
+    --background-dark: #1a1a1a;
+    --background-light: #2c2c2c;
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
+    
+    /* Transitions */
+    --transition-normal: 0.3s ease;
+    
+    /* Border Radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 16px;
+}
+
+/* ==========================================================================
+   Reset and Base Styles
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: 'Arial', sans-serif;
+}
+
+/* ==========================================================================
+   Background Animation
+   ========================================================================== */
+   body {
+    background: linear-gradient(135deg, #1a1f25 0%, #2c3e50 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+body::before, body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 200%;
+    background-image: 
+        radial-gradient(white 1px, transparent 2px),
+        radial-gradient(rgba(255,255,255,0.8) 1px, transparent 2px),
+        radial-gradient(rgba(255,255,255,0.6) 1px, transparent 2px);
+    background-size: 
+        calc(300px + var(--random-size-1, 0px)) calc(300px + var(--random-size-1, 0px)),
+        calc(250px + var(--random-size-2, 0px)) calc(250px + var(--random-size-2, 0px)),
+        calc(200px + var(--random-size-3, 0px)) calc(200px + var(--random-size-3, 0px));
+    background-position: 
+        calc(var(--random-pos-1, 0) * 1vw) calc(var(--random-pos-2, 0) * 1vh),
+        calc(var(--random-pos-3, 0) * 1vw) calc(var(--random-pos-4, 0) * 1vh),
+        calc(var(--random-pos-5, 0) * 1vw) calc(var(--random-pos-6, 0) * 1vh);
+    background-repeat: repeat;
+    animation: starsAnimation 120s linear infinite;
+    z-index: -1;
+    opacity: 0.7;
+    will-change: transform;
+}
+
+body::after {
+    top: -100%;
+    animation: starsAnimation 120s linear infinite;
+    animation-delay: -60s;
+}
+
+@keyframes starsAnimation {
+    0% { 
+        transform: translateY(0) rotate(0deg);
+    }
+    100% { 
+        transform: translateY(-50%) rotate(360deg);
+    }
+}
+/* ==========================================================================
+   Auth Container & Form
+   ========================================================================== */
+.auth-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    max-width: 400px;
+    padding: 40px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 1;
+    background: transparent !important;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    background: transparent !important;
+}
+
+/* Form Elements */
+.auth-form .form-group {
+    background: transparent !important;
+    position: relative;
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(44, 62, 80, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: var(--transition-normal);
+}
+
+.auth-form input:hover {
+    border-color: rgba(52, 152, 219, 0.5);
+}
+
+.auth-form input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.15);
+}
+
+.auth-form label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* Header Styles */
+.auth-header {
+    text-align: center;
+    margin-bottom: 35px;
+    background: transparent !important;
+}
+
+.auth-header h1 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    background: linear-gradient(45deg, #3498db, #2ecc71);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.auth-header p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+/* Button & Links */
+.auth-form button {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(45deg, #3498db, #2ecc71) !important;
+    color: var(--text-primary);
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-normal);
+}
+
+.auth-form button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.auth-links {
+    text-align: center;
+    margin-top: 20px;
+    background: transparent !important;
+}
+
+.auth-links a {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: var(--transition-normal);
+    position: relative;
+}
+
+.auth-links a:hover {
+    color: #2ecc71;
+}
+
+/* Accessibility */
+:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+@media (max-width: 480px) {
+    .auth-container {
+        width: 90%;
+        padding: 30px 20px;
+    }
+
+    .auth-header h1 {
+        font-size: 1.75rem;
+    }
+}

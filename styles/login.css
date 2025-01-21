@@ -95,7 +95,7 @@ body::after {
 /* ==========================================================================
    Auth Container & Form
    ========================================================================== */
-.auth-container {
+   .auth-container {
     position: fixed;
     top: 50%;
     left: 50%;
@@ -105,35 +105,34 @@ body::after {
     padding: 40px;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background-color: transparent; /* Fondo semitransparente */
     border: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 1;
-    background: transparent !important;
-}
+  }
 
 .auth-form {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    background: transparent !important;
+    background: transparent;
 }
 
-/* Form Elements */
 .auth-form .form-group {
-    background: transparent !important;
+    background: transparent;
     position: relative;
 }
 
 .auth-form input {
     width: 100%;
     padding: 12px 16px;
-    background: rgba(44, 62, 80, 0.3) !important;
+    background: rgba(44, 62, 80, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-md);
     color: var(--text-primary);
     font-size: 1rem;
     transition: var(--transition-normal);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .auth-form input:hover {

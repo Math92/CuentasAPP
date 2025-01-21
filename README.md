@@ -186,7 +186,7 @@ CuentasAPP/
 
 1. Clonar el repositorio
 2. Configurar credenciales de Firebase en `firebase-service.js`
-3. Abrir `index.html` en un servidor web
+3. Abrir `login.html` en un servidor web
 4. Registrar una nueva cuenta o usar credenciales existentes
 
 ## Consideraciones de Seguridad 🔒
@@ -204,11 +204,3 @@ CuentasAPP/
 - Soporte de CSS Grid y Flexbox
 - Capacidades de almacenamiento local
 - Compatibilidad con Firebase
-
-## Mejoras Futuras 🎯
-
-- Funcionalidad de exportación para informes financieros
-- Soporte de múltiples monedas
-- Análisis y reportes avanzados
-- Características de planificación de presupuesto
-- Versión de aplicación móvil

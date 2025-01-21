@@ -16,6 +16,18 @@ const generarDatosGastoFijo = () => ({
   detalles: faker.lorem.sentence()
 });
 
+
+
+
+
+
+
+
+
+
+
+// ============== TESTS UNITARIOS ==============
+
 describe('Pruebas Avanzadas de la Clase Préstamo', () => {
   let prestamo;
   let datosPrestamo;
@@ -199,8 +211,27 @@ describe('Pruebas Avanzadas de Gastos Fijos', () => {
   });
 });
 
+
+
+
+
+
+
+
+
+
+
+
+
+// ============== TESTS DE INTEGRACIÓN ==============
+
 describe('Pruebas de Integración', () => {
   test('debe manejar el ciclo de vida completo del préstamo con gastos fijos', () => {
+    // Este test integra las tres clases principales del sistema:
+    // - Crea un registro de deuda
+    // - Añade un préstamo
+    // - Gestiona gastos fijos
+    // - Verifica la interacción correcta entre todos los componentes
     const datosPrestamo = generarDatosPrestamo();
     const datosGasto = generarDatosGastoFijo();
     
